@@ -1,0 +1,7 @@
+apiVersion: volumegroup.storage.dell.com/v1alpha1
+kind: DellCsiVolumeGroupSnapshot
+metadata:
+  name: dellcsivolumegroupsnapshot-sample
+spec:
+  # Add fields here
+  driverName: "volumegroup"

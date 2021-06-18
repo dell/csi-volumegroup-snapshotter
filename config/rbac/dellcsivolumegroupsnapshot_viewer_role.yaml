@@ -1,0 +1,20 @@
+# permissions for end users to view dellcsivolumegroupsnapshots.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dellcsivolumegroupsnapshot-viewer-role
+rules:
+- apiGroups:
+  - volumegroup.storage.dell.com
+  resources:
+  - dellcsivolumegroupsnapshots
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - volumegroup.storage.dell.com
+  resources:
+  - dellcsivolumegroupsnapshots/status
+  verbs:
+  - get

@@ -1,0 +1,34 @@
+{
+    "service": "VolumeGroupSnapshot",
+    "method": "CreateVolumeGroupSnapshot",
+    "input": {
+        "equals": {
+            "Name": "vg-snap",
+            "SourceVolumeIDs": [
+                "4d4a2e5a36080e0f-12345"
+            ]
+        }
+    },
+    "output": {
+        "data": {
+            "Snapshots": [
+                {
+                    "snap_id": "123",
+                    "source_id": "123",
+                    "readyToUse": true,
+                    "CreationTime": 20200202,
+                    "Name": "hello"
+                },
+                {
+                    "snap_id": "123",
+                    "source_id": "123",
+                    "readyToUse": true,
+                    "CreationTime": 20200202,
+                    "Name": "hello2"
+                }
+            ],
+            "SnapshotGroupID": "123",
+            "CreationTime": 20200202
+        }
+    }
+}

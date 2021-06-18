@@ -1,0 +1,24 @@
+# permissions for end users to edit dellcsivolumegroupsnapshots.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dellcsivolumegroupsnapshot-editor-role
+rules:
+- apiGroups:
+  - volumegroup.storage.dell.com
+  resources:
+  - dellcsivolumegroupsnapshots
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - volumegroup.storage.dell.com
+  resources:
+  - dellcsivolumegroupsnapshots/status
+  verbs:
+  - get

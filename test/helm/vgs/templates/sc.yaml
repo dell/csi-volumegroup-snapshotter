@@ -1,0 +1,16 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vgs-test
+provisioner: csi-vxflexos.dellemc.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+parameters:
+  storagepool: {{ .Values.storagePool }}
+  systemID: {{ .Values.systemId }}
+volumeBindingMode: Immediate
+allowedTopologies:
+- matchLabelExpressions:
+  - key: csi-vxflexos.dellemc.com/{{ .Values.systemId }}
+    values:
+    - csi-vxflexos.dellemc.com
