@@ -1,0 +1,9 @@
+.vscode/
+*.out
+*.html
+.idea
+bin/
+csi-vxflexos/
+goscaleio/
+dell-csi-extensions/
+

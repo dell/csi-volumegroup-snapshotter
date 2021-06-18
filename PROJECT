@@ -1,0 +1,18 @@
+domain: storage.dell.com
+layout: go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: dell-csi-volumegroup-snapshotter
+repo: github.com/dell/dell-csi-volumegroup-snapshotter
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: storage.dell.com
+  group: volumegroup
+  kind: DellCsiVolumeGroupSnapshot
+  path: github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1
+  version: v1alpha1
+version: "3"

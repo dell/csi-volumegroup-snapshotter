@@ -1,0 +1,15 @@
+{
+    "service": "VolumeGroupSnapshot",
+    "method": "CreateVolumeGroupSnapshot",
+    "input": {
+        "equals": {
+            "Name": "vg-snap-error",
+            "SourceVolumeIDs": [
+                "4d4a2e5a36080e0f-12345"
+            ]
+        }
+    },
+    "output": {
+        "error": "deliberately return error to test csi driver extension grpc error"
+    }
+}
