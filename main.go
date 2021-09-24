@@ -24,13 +24,14 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
+	csiclient "github.com/dell/dell-csi-volumegroup-snapshotter/pkg/csiclient"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	volumegroupv1 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1"
+	volumegroupv1 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
 
 	// latest v1 from external does compile ok
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
@@ -38,7 +39,6 @@ import (
 	"github.com/dell/dell-csi-volumegroup-snapshotter/controllers"
 	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/common"
 	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/connection"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/csiclient"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
 )
@@ -100,6 +100,14 @@ func main() {
 	}
 	leaderElectionID := common.DellCSIVolumegroup
 
+	csiclientconn := csiclient.New(csiConn, ctrl.Log.WithName("csiclient"), csiOperationTimeout)
+
+	driverName, err := csiclientconn.ProbeDriver()
+	if err != nil {
+		setupLog.Error(err, "error waiting for the CSI driver to be ready")
+		os.Exit(1)
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
@@ -118,6 +126,7 @@ func main() {
 		Log:           ctrl.Log.WithName("controllers").WithName("DellCsiVolumeGroupSnapshot"),
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), csiOperationTimeout),
 		EventRecorder: mgr.GetEventRecorderFor(common.DellCSIVolumegroup),
+		DriverName:    driverName,
 		Scheme:        mgr.GetScheme(),
 	}).SetupWithManager(mgr, expRateLimiter, workerThreads); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DellCsiVolumeGroupSnapshot")

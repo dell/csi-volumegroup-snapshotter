@@ -1,4 +1,4 @@
-apiVersion: volumegroup.storage.dell.com/v1alpha1
+apiVersion: volumegroup.storage.dell.com/v1alpha2
 kind: DellCsiVolumeGroupSnapshot
 metadata:
   name: dellcsivolumegroupsnapshot-sample

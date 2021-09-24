@@ -1,9 +1,12 @@
+# Integration tests for Volume Group Snapshotter
+The integration test is simulated test of the different pieces of snapshotter. Refer to features/vg.feature for scenarios covered in this integration test.
 
-refer features/vg.feature for scenarios covered in this integration test
+## Pre-requisites
+- SDC is installed
+- Driver integration tests are passing
+- config.json in this folder points to a valid array
 
-pre req : must have sdc installed and driver int test pass , config.json in this folder must point to valid array
-
-also look at go.mod and pull the "replace" source for csi-vxflexos , goscaleio and dell-csi-extensions to the appropriate location
+## Run Test
+Check the go.mod file and make sure all the "replace" directives are as desired.
 
 run.sh : will start driver-server and run snapshot vg create tests
-

@@ -10,7 +10,7 @@
     },
     {
         "username": "admin",
-        "password": "Password123",
+        "password": "password",
         "systemID": "ID2",
         "endpoint": "https://127.0.0.2",
         "insecure": true,

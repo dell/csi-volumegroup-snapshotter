@@ -1,8 +1,8 @@
 package common
 
 import (
-	"github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1"
-	storagev1alpha1 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1"
+	"github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
+	storagev1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -26,7 +26,7 @@ type Common struct {
 
 func InitializeSchemes() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
-	utilruntime.Must(storagev1alpha1.AddToScheme(Scheme))
+	utilruntime.Must(storagev1alpha2.AddToScheme(Scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -96,19 +96,20 @@ func MakeVSC(name, driver string) s1.VolumeSnapshotClass {
 }
 
 // create a volume group snapshotter object
-func MakeVG(name, ns, driver, pvcLabel, vsc string) v1alpha1.DellCsiVolumeGroupSnapshot {
-	volumeGroup := v1alpha1.DellCsiVolumeGroupSnapshot{
+func MakeVG(name, ns, driver, pvcLabel, vsc string, reclaimPolicy v1alpha2.MemberReclaimPolicy, pvcList []string) v1alpha2.DellCsiVolumeGroupSnapshot {
+	volumeGroup := v1alpha2.DellCsiVolumeGroupSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: ns,
 		},
-		Spec: v1alpha1.DellCsiVolumeGroupSnapshotSpec{
+		Spec: v1alpha2.DellCsiVolumeGroupSnapshotSpec{
 			DriverName:          driver,
-			MemberReclaimPolicy: "retain",
-			PvcLabel:            pvcLabel,
+			MemberReclaimPolicy: reclaimPolicy,
 			Volumesnapshotclass: vsc,
+			PvcLabel:            pvcLabel,
+			PvcList:             pvcList,
 		},
-		Status: v1alpha1.DellCsiVolumeGroupSnapshotStatus{
+		Status: v1alpha2.DellCsiVolumeGroupSnapshotStatus{
 			SnapshotGroupID: "",
 			Snapshots:       "",
 		},

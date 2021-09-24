@@ -2,7 +2,7 @@
     "service": "VolumeGroupSnapshot",
     "method": "CreateVolumeGroupSnapshot",
     "input": {
-        "equals": {
+        "contains": {
             "Name": "vg-snap-error",
             "SourceVolumeIDs": [
                 "4d4a2e5a36080e0f-12345"

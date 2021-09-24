@@ -17,9 +17,16 @@ package common
 
 // Constants
 const (
-	//DefaultDomain              = "volumegroup.storage.dell.com"
-	//DellVolumgeGroupController = "dell-volumegroup-controller"
 	// DellCSIVolumegroup - Name of the sidecar controller manager
 	DellCSIVolumegroup = "dell-csi-volumegroup-snapshotter"
 	LabelSnapshotGroup = "snapshotGroup"
+
+	EventTypeNormal       = "Normal"
+	EventTypeWarning      = "Warning"
+	EventReasonUpdated    = "Updated"
+	EventStatusPending    = "Pending"
+	EventStatusError      = "Error"
+	EventStatusIncomplete = "Incomplete"
+	EventStatusComplete   = "Complete"
+	FinalizerName         = "vgFinalizer"
 )

@@ -12,7 +12,6 @@ import (
 
 	csi_ext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"github.com/dell/dell-csi-volumegroup-snapshotter/test/mock-server/stub"
-	"github.com/prometheus/common/log"
 	"google.golang.org/grpc"
 )
 
@@ -20,6 +19,12 @@ import (
 type MockVolumeGroupSnapshotServer struct{}
 
 var MockServer *grpc.Server
+
+func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csi_ext.ProbeControllerRequest) (*csi_ext.ProbeControllerResponse, error) {
+	out := &csi_ext.ProbeControllerResponse{}
+	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
+	return out, err
+}
 
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
@@ -112,7 +117,8 @@ func RunServer(stubsPath string) {
 
 	lis, err := net.Listen(protocol, csiAddress)
 	if err != nil {
-		log.Fatalf("failed to listen on address [%s]: %s", csiAddress, err.Error())
+		fmt.Printf("failed to listen on address [%s]: %s", csiAddress, err.Error())
+		return
 	}
 
 	MockServer = grpc.NewServer()
@@ -133,5 +139,5 @@ func RunServer(stubsPath string) {
 // stop mock server gracefully
 func StopMockServer() {
 	MockServer.GracefulStop()
-	log.Info("Server stopped gracefully")
+	fmt.Printf("Server stopped gracefully")
 }

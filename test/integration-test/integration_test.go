@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	//"net"
+
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -42,7 +42,7 @@ type ArrayConnectionData struct {
 
 // read config.json and confirm its good
 func init() {
-	/* load array config and give proper errors if not ok*/
+	// load array config and give proper errors if not ok
 	if _, err := os.Stat(configFile); err == nil {
 		if _, err := ioutil.ReadFile(configFile); err != nil {
 			err = fmt.Errorf("DEBUG integration pre requisites missing %s with multi array configuration file ", configFile)
@@ -75,6 +75,10 @@ func init() {
 	}
 }
 
+func TestDummy(t *testing.T) {
+	return
+}
+
 // similar to driver integration test
 // use godog feature to run init and cleanup steps before and after all scenarios
 func TestMain(m *testing.M) {
@@ -90,7 +94,7 @@ func TestMain(m *testing.M) {
 	var opts = godog.Options{
 		Format: "pretty", // can define default values
 		Paths:  []string{"features"},
-		Tags:   "vg",
+		//Tags:   "wip",
 	}
 	exitVal := godog.TestSuite{
 		Name:                 "godog",
@@ -98,9 +102,11 @@ func TestMain(m *testing.M) {
 		ScenarioInitializer:  VGFeatureContext,
 		Options:              &opts,
 	}.Run()
+
 	if st := m.Run(); st > exitVal {
 		exitVal = st
 	}
+
 	stop()
 	os.Exit(exitVal)
 }
@@ -108,7 +114,7 @@ func TestMain(m *testing.M) {
 func startServer(ctx context.Context) (*grpc.ClientConn, func()) {
 	// Create a new SP instance and serve it with a piped connection.
 	sp := provider.New()
-	service.ArrayConfig = configFile
+	service.ArrayConfigFile = configFile
 	lis, err := utils.GetCSIEndpointListener()
 	if err != nil {
 		fmt.Printf("couldn't open listener: %s\n", err.Error())
