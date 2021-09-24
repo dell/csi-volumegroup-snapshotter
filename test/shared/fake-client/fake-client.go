@@ -4,16 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	storagev1alpha1 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1"
+	"time"
+
+	storagev1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
 	"github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/common"
+	snapv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
-	//storagev1 "k8s.io/api/storage/v1"
+
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -114,21 +119,32 @@ func (f Client) List(ctx context.Context, list client.ObjectList, opts ...client
 		}
 	}
 	switch list.(type) {
-	case *storagev1alpha1.DellCsiVolumeGroupSnapshotList:
-		return f.listVG(list.(*storagev1alpha1.DellCsiVolumeGroupSnapshotList))
+	case *storagev1alpha2.DellCsiVolumeGroupSnapshotList:
+		return f.listVG(list.(*storagev1alpha2.DellCsiVolumeGroupSnapshotList))
 	case *core_v1.PersistentVolumeClaimList:
 		return f.listPersistentVolumeClaim(list.(*core_v1.PersistentVolumeClaimList), opts[0])
 	case *core_v1.PersistentVolumeList:
 		return f.listPersistentVolume(list.(*core_v1.PersistentVolumeList))
+	case *snapv1.VolumeSnapshotContentList:
+		return f.listVolumeSnapshotContent(list.(*snapv1.VolumeSnapshotContentList))
 	default:
-		return fmt.Errorf("unknown type: %s", reflect.TypeOf(list))
+		return fmt.Errorf("fake client unknown type: %s", reflect.TypeOf(list))
 	}
 }
 
-func (f *Client) listVG(list *storagev1alpha1.DellCsiVolumeGroupSnapshotList) error {
+func (f *Client) listVolumeSnapshotContent(list *snapv1.VolumeSnapshotContentList) error {
+	for k, v := range f.Objects {
+		if k.Kind == "VolumeSnapshotContent" {
+			list.Items = append(list.Items, *v.(*snapv1.VolumeSnapshotContent))
+		}
+	}
+	return nil
+}
+
+func (f *Client) listVG(list *storagev1alpha2.DellCsiVolumeGroupSnapshotList) error {
 	for k, v := range f.Objects {
 		if k.Kind == "DellCsiVolumeGroupSnapshot" {
-			list.Items = append(list.Items, *v.(*storagev1alpha1.DellCsiVolumeGroupSnapshot))
+			list.Items = append(list.Items, *v.(*storagev1alpha2.DellCsiVolumeGroupSnapshot))
 		}
 	}
 	return nil
@@ -145,7 +161,11 @@ func (f *Client) listPersistentVolumeClaim(list *core_v1.PersistentVolumeClaimLi
 
 	ls := lo.LabelSelector
 	ns := lo.Namespace
-	fmt.Printf("debug pvc list for ns = %s ls value =%#v\n", ns, ls.String())
+	if ls != nil {
+		fmt.Printf("debug pvc list for ns = %s ls value =%#v\n", ns, ls.String())
+	} else {
+		fmt.Printf("debug pvc list for ns = %s", ns)
+	}
 
 	//debug pvc list lo labels.internalSelector{labels.Requirement{key:"name", operator:"=", strValues:[]string{"vg-snap-label"}}}
 	//debug pvc list lo "name=vg-snap-label"
@@ -157,13 +177,18 @@ func (f *Client) listPersistentVolumeClaim(list *core_v1.PersistentVolumeClaimLi
 				fmt.Printf("debug pvc not in same namespace %s %s\n", vol.ObjectMeta.Name, ns)
 				continue
 			}
-			lbs := vol.ObjectMeta.Labels
-			for _, l := range lbs {
-				if ls.String() == "volume-group="+l {
-					fmt.Printf("debug pvc ns %s", vol.ObjectMeta.Namespace)
-					fmt.Printf("debug pvc found %#v\n", vol.ObjectMeta.Name)
-					list.Items = append(list.Items, vol)
+
+			if ls != nil {
+				lbs := vol.ObjectMeta.Labels
+				for _, l := range lbs {
+					if ls.String() == "volume-group="+l {
+						fmt.Printf("debug pvc ns %s", vol.ObjectMeta.Namespace)
+						fmt.Printf("debug pvc found %#v\n", vol.ObjectMeta.Name)
+						list.Items = append(list.Items, vol)
+					}
 				}
+			} else {
+				list.Items = append(list.Items, vol)
 			}
 		}
 	}
@@ -235,8 +260,48 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 		}
 		return errors.NewNotFound(gvr, k.Name)
 	}
+
+	// if deletiontimestamp is not zero, we want to go into deletion logic
+	if !obj.GetDeletionTimestamp().IsZero() {
+		return nil
+	}
+
+	// if obj is volumesnapshot, check its delete policy
+	// if it is 'delete', delete volumesnapshotcontent
+	if o, ok := obj.(*snapv1.VolumeSnapshot); ok {
+		contentname := o.Spec.Source.VolumeSnapshotContentName
+		vc := &snapv1.VolumeSnapshotContent{}
+		f.Get(ctx, client.ObjectKey{
+			Name: *contentname,
+		}, vc)
+
+		if vc.Spec.DeletionPolicy == "Delete" {
+			k2, err := getKey(vc)
+			if err != nil {
+				return err
+			}
+			delete(f.Objects, k2)
+		}
+	}
+
 	delete(f.Objects, k)
 	return nil
+}
+
+// set deletion timestamp so that reconcile can go into deletion part of code
+func (f Client) SetDeletionTimeStamp(ctx context.Context, obj client.Object) error {
+	k, err := getKey(obj)
+	if err != nil {
+		return err
+	}
+
+	if len(obj.GetFinalizers()) > 0 {
+		obj.SetDeletionTimestamp(&v1.Time{Time: time.Now()})
+		f.Objects[k] = obj
+		return nil
+	}
+
+	return fmt.Errorf("failed to set timestamp")
 }
 
 func (f Client) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {

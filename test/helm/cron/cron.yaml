@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vgs-config
+  namespace: vxflexos
+data:
+  vgs-config.yaml: |
+    apiVersion: volumegroup.storage.dell.com/v1alpha2
+    kind: DellCsiVolumeGroupSnapshot
+    metadata:
+      name: "vgs-test-TIME"
+      namespace: "helmtest-vxflexos"
+    spec:
+      driverName: "csi-vxflexos.dellemc.com"
+      memberReclaimPolicy: "Delete"
+      volumesnapshotclass: "vxflexos-snapclass"
+      pvcLabel: "vgs-snap-label"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vgs-cron
+  namespace: vxflexos
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: create-vgs
+            image: registry.access.redhat.com/ubi8/ubi:8.4
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - cp vgs-config/vgs-config.yaml vgsToCreate && sed -i 's/TIME/'$(date +%m%d%y-%H%M%S )'/g' vgsToCreate && cat vgsToCreate && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl &&  kubectl create -f vgsToCreate
+            volumeMounts:
+              - name: vgs-yaml
+                mountPath: /vgs-config
+          volumes:
+            - name: vgs-yaml
+              configMap:
+                name: vgs-config
+          serviceAccountName: vxflexos-controller
+          restartPolicy: OnFailure 

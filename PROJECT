@@ -13,6 +13,6 @@ resources:
   domain: storage.dell.com
   group: volumegroup
   kind: DellCsiVolumeGroupSnapshot
-  path: github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha1
-  version: v1alpha1
+  path: github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2
+  version: v1alpha2
 version: "3"

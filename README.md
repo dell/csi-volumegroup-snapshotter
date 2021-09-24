@@ -1,139 +1,68 @@
-# CSM Volume Group Snapshotter
-Many stateful Kubernetes applications use several persistent volumes to store data. 
-To create recoverable snapshots of volumes for these applications, it is necessary to have capability to create 
-consistent snapshots across all volumes of the application at the same time.  
-Dell CSM Volume Group Snapshotter is an operator which extends Kubernetes API to support crash-consistent 
-snapshots of groups of volumes. 
-This operator consists of VolumeGroupSnapshot CRD and csi-volumegroupsnapshotter controller. The csi-volumegroupsnapshotter
-is a sidecar container, which runs in the controller pod of CSI driver.
-The csi-volumegroupsnapshotter uses CSI extension, implemented by Dell EMC CSI drivers, to manage volume group snapshots on 
-backend arrays. 
+<!--
+Copyright (c) 2021 Dell Inc., or its subsidiaries. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+-->
 
-CSM Volume Group Snapshotter is currently in a Technical Preview Phase, and should be considered alpha software. 
-We are actively seeking feedback from users about its features.
-Please provide feedback using <TBD> .
-We will take that input, along with our own results from doing extensive testing, 
-and incrementally improve the software. We do not recommend or support it for production use at this time.
+# Dell Container Storage Modules (CSM) Volume Group Snapshotter
 
-## Volume Group Snapshot CRD
-In Kubernetes volume group snapshot objects are represented as instances of VolumeGroupSnapshot CRD.
-Example of VolumeGroupSnapshot instance in Kubernetes:
-```yaml
-Name:         vg1-snap1
-Namespace:    helmtest-vxflexos
-Labels:       <none>
-Annotations:  <none>
-API Version:  volumegroup.storage.dell.com/v1alpha1
-Kind:         DellCsiVolumeGroupSnapshot
-Metadata:
-  Creation Timestamp:  2021-05-07T16:18:15Z
-  Generation:          1
-  Managed Fields:
-    API Version:  volumegroup.storage.dell.com/v1alpha1
-    Fields Type:  FieldsV1
-    .............
-    Manager:         vg-snapshotter
-    Operation:       Update
-    Time:            2021-05-07T16:18:17Z
-  Resource Version:  24607275
-  UID:               c2f53f33-1bd6-40ef-b1df-59b85627834d
-Spec:
-  Driver Name:            csi-vxflexos.dellemc.com
-  Member Reclaim Policy:  retain
-  Pvc Label:              volumeGroup1
-  Volumesnapshotclass:    vxflexos-snapclass
-Status:
-  Creation Time:      2021-05-07T16:08:32Z
-  Snapshot Group ID:  4d4a2e5a36080e0f-bab0ef6900000002
-  Snapshots:          vg1-snap1-0-pvol1,vg1-snap1-1-pvol0
+[![License](https://img.shields.io/github/license/dell/csi-volumegroup-snapshotter?style=flat-square&color=blue&label=License)](https://github.com/dell/csi-volumegroup-snapshotter/blob/master/LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/dellemc/csi-volumegroup-snapshotter)](https://hub.docker.com/repository/docker/dellemc/csi-volumegroup-snapshotter)
+[![Go version](https://img.shields.io/github/go-mod/go-version/dell/csi-volumegroup-snapshotter)](go.mod)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/dell/csi-volumegroup-snapshotter?include_prereleases&label=latest&style=flat-square)](https://github.com/dell/csi-volumegroup-snapshotter/releases/latest)
 
-```
-To create an instance of VolumeGroupSnapshot in Kubernetes cluster, create .yaml file similar to this one VGS.yaml:
-```
-apiVersion: volumegroup.storage.dell.com/v1alpha1 
-kind: DellCsiVolumeGroupSnapshot 
-metadata:
-  name: "vg1-snap1"
-  namespace: "helmtest-vxflexos"
-spec:
-  driverName: "csi-vxflexos.dellemc.com"
-  # defines how to process VolumeSnapshot members when volume group snapshot is deleted
-  # "retain" --- keep VolumeSnapshot instances
-  # "delete" --- delete VolumeSnapshot instances
-  memberReclaimPolicy: "retain"
-  # volume snapshot class to use for VolumeSnapshot members in volume group snapshot
-  volumesnapshotclass: "vxflexos-snapclass"
-  pvcLabel: "volumeGroup1"
-```
-Run command: `kubectl create -f VGS.yaml`
+Dell CSM Volume Group Snapshotter is part of the [Container Storage Modules (CSM)](https://github.com/dell/csm) open-source suite of Kubernetes storage enablers for Dell EMC products.
 
-## csi-volumegroupsnapshotter Controller
+This project aims at extending native Kubernetes functionality to support _Disaster Recovery_ workflows by utilizing storage array based volume snapshot.
 
-The csi-volumegroupsnapshotter controller processes reconcile requests for VolumeGroupSnapshot events. 
-#### Reconcile logic for VolumeGroupSnapshot create event 
-Reconciliation steps:
-1. Find all PVC instances with volume-group label as defined in `pvcLabel` attribute in volume group snapshot
-```
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: pvol0
-  namespace: helmtest-vxflexos
-  labels:
-    volume-group: volumeGroup1
-spec:
-  accessModes:
-  - ReadWriteOnce
-  volumeMode: Filesystem
-  resources:
-    requests:
-      storage: 8Gi
-  storageClassName: vxflexos
-```
-2. Get volumeHandle for all corresponding PersistentVolume instances for this set of PVCs
-3. Call CreateVolumeGroupSnapshot() CSI API extension method of CSI driver with list of volume handles and volume group
-   snapshot name
-4. Once driver responds with list of Snapshot objects create 
-   VolumeSnapshot and VolumeSnapshotContent instances for group members in Kubernetes. As a result, VolumeSnapshot and 
-   VolumeSnapshotContent instances are created for each snapshot in the group. To associate VolumeSnapshot instances with
-   parent group, these objects are labeled with VolumeGroupSnapshot name.
-5. Update status of VolumeGroupSnapshot to set groupID, creationTime and list of VolumeSnapshot member names.   
+The Dell CSM Volume Group Snapshotter is an operator which extends Kubernetes API to support crash-consistent snapshots of groups of volumes. 
+This operator consists of VolumeGroupSnapshot CRD and _CSM Volumegroupsnapshotter Controller_, which is a sidecar container that runs in the controller pod of the CSI driver.
+It uses the `dell-csi-extensions` API, implemented by Dell EMC CSI drivers, to manage volume group snapshots on backend arrays. You can read more about the extensions [here](https://github.com/dell/dell-csi-extensions).
 
-#### Reconcile logic for VolumeGroupSnapshot delete event
-Reconciliation steps: 
-1. Call DeleteVolumeGroupSnapshot CSI API extension method of CSI driver with volume group snapshot ID
-2. Once driver responds, remove volume group snapshot label from VolumeSnapshot members
-3. Delete VolumeGroupSnapshot in Kubernetes
-3. Process member VolumeSnapshot instances based on the value of 
-   `memberReclaimPolicy` in VolumeGroupSnapshot instance. For `delete` call Kubernetes API to delete each
-   VolumeSnapshot instance, for `retain` keep VolumeSnapshot instances 
+For documentation, please visit [Container Storage Modules documentation](https://dell.github.io/csm-docs/).
 
-## CSI Extension for Volume Group Snapshot Operations in Drivers
-The CSI extension API is defined  [here](https://github.com/dell/dell-csi-extensions) under volumeGroupSnapshot.
+CSI Volume Group Snapshotter is currently in a Technical Preview Phase, and should be considered pre-release software. We are actively seeking feedback from users about its features. Please provide feedback using . We will take that input, along with our own results from doing extensive testing, and incrementally improve the software. We do not recommend or support it for production use at this time.
 
 ## Supported CSI Drivers
-Currently, in the initial Technical Preview, CSM Volume Group Snapshotter provides support to create and delete volume group 
-snapshots for PowerFlex array. 
+Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots for PowerFlex array. 
 Additional array support in CSM Volume Group Snapshotter is planned for the near future.
 
-## Deploying CSM Volume Group Snapshotter
-Install Volume Group Snapshot alpha CRD in your cluster:
-* wget https://github.com/dell/dell-csi-volumegroup-snapshotter/tree/master/config/crd/bases
-* kubectl create -f config/crd/bases
+## Build
+This project is a Go module (see golang.org Module information for explanation), and you can build multiple binaries & images with the provided Makefile.
 
+### Dependencies
+This project relies on the following tools which have to be installed in order to generate certain manifests.
+
+| Tool | Version |
+| --------- | ----------- |
+| externalshapshotter-v1 | v4.1.x |
+
+To install the external-snapshotter, please see the [GitHub repository](https://github.com/kubernetes-csi/external-snapshotter/tree/v4.1.1). If you have already installed the correct version of the external-snapshotter with the CSI driver, you don't need to do it again.
+
+
+### Binaries
+
+To build an image for docker, run `make docker-build`
+To build an image for podman, run `make podman-build`
+
+## Installation
+To install and use the Volume Group Snapshotter, you need to install the CRD in your cluster and also deploy it with the driver.
+
+### Custom Resource Definitions
+
+Run the command `make install` to install the Custom Resource Definitions in your Kubernetes cluster.
 Configure all the helm chart parameters described below before deploying the drivers.
 
-### Helm Chart Installation
+### Deploy VGS in Driver with Helm Chart Parameters
 
-These installation instructions apply to the helm chart in the (PowerFlex CSI Driver) https://github.com/dell/csi-powerflex repository
-version v1.5.0.  
-The drivers that support Helm chart deployment allow CSM Volume Group Snapshotter to be _optionally_ deployed 
-by variables in the chart. There is a _vgsnapshotter_ block specified in the _values.yaml_ file of the chart 
-that will look similar the text below by default:
+The drivers that support Helm chart deployment allow the CSM Volume Group Snapshotter to be _optionally_ deployed 
+by variables in the chart. There is a _vgsnapshotter_ block specified in the _values.yaml_ file of the chart that will look similar the text below by default:
 
 ```
-# Volume Group Snapshotter feature is an optional feature under development and tech preview.
-# Enable this feature only after contact support for additional information
+# volume group snapshotter(vgsnapshotter) details
+# These options control the running of the vgsnapshotter container
 vgsnapshotter:
   enabled: false
   image: 
@@ -141,27 +70,103 @@ vgsnapshotter:
 ```
 To deploy CSM Volume Group Snapshotter with the driver, the following changes are required:
 1. Enable CSM Volume Group Snapshotter by changing the vgsnapshotter.enabled boolean to true. 
-2. Specify the Volume Group Snapshotter image to be used as vgsnapshotter.image .
-3. Install PowerFlex driver with `csi_install.sh`
+2. In the image field, put the location of the image you created in the above steps, or link to one already built.
+3. Install driver with `csi_install.sh` script
 
-### How to Build Controller Image
-```  
-git clone https://github.com/dell/dell-csi-volumegroup-snapshotter.git  
-cd dell-csi-volumegroup-snapshotter  
-make docker-build ( to build image or make podman-build)  
-```  
+## Volume Group Snapshot CRD Create
+In Kubernetes, volume group snapshot objects are represented as instances of VolumeGroupSnapshot CRD.
+Here is an example of a VolumeGroupSnapshot instance in Kubernetes:
 
-## Testing Approach 
-### Unit Tests
-  To run unit tests, at top level of repository, run 
-  ```make unit-test```  
-  
-### Integration Tests
-  To run integration tests, at top level of repository, run
-  ```make int-test```  
-  for more information, consult the [integration test README](test/integration-test/README.md) 
+```yaml
+Name:         demo-vg
+Namespace:    helmtest-vxflexos
+API Version:  volumegroup.storage.dell.com/v1alpha2
+Kind:         DellCsiVolumeGroupSnapshot
+Spec:
+  Driver Name:            csi-vxflexos.dellemc.com
+  Member Reclaim Policy:  Retain
+  Pvc Label:              vgs-snap-label
+  Volumesnapshotclass:    vxflexos-snapclass
+Status:
+  Creation Time:        2021-08-20T08:56:16Z
+  Ready To Use:         true
+  Snapshot Group ID:    1235e15806d1ec0f-b0eec05600000003
+  Snapshot Group Name:  demo-vg-20082021-142241
+  Snapshots:            demo-vg-20082021-142241-0-pvol0,demo-vg-20082021-142241-1-pvol2,demo-vg-20082021-142241-2-pvol1
+  Status:               Complete
+Events:
+  Type    Reason   Age   From                              Message
+  ----    ------   ----  ----                              -------
+  Normal  Updated  41s   dell-csi-volumegroup-snapshotter  Created VG snapshotter vg with name: demo-vg
+  Normal  Updated  41s   dell-csi-volumegroup-snapshotter  Updated VG snapshotter vg with name: demo-vg
+```
+Some of the above fields are described here:
 
-### Helm Tests
-  To run the helm test, consult the [helm test README](test/helm/README.MD)
+| Field               | Description                                                         |
+| :--                 | :--                                                                 |
+| **Status**          | Group of field defining the status of the VGS.                      |
+| Creation Time       | Time that the snapshot was taken.                                   |
+| Ready To Use        | Field defining whether the VGS is ready to use.                     |
+| Snapshot Group ID   | Group ID for the VGS.                                               |
+| Snapshot Group Name | Unique, timestamped name for the VGS (date format: DDMMYYYY-HHMMSS) |
+| Snapshots           | List of Volume Snapshots contained in the group.                    |
+| Status              | Overall status of the VGS.                                          |
+
+To create an instance of VolumeGroupSnapshot in Kubernetes cluster, create .yaml file similar to vg.yaml in the top-level folder. Below is a sample .yaml followed by a table of parameters:
+```
+apiVersion: volumegroup.storage.dell.com/v1alpha2
+kind: DellCsiVolumeGroupSnapshot
+metadata:
+  # Name must be 13 characters or less in length
+  name: "vg-snaprun1"
+  namespace: "helmtest-vxflexos"
+spec:
+  # Add fields here
+  driverName: "csi-vxflexos.dellemc.com"
+  memberReclaimPolicy: "Retain"
+  volumesnapshotclass: "vxflexos-snapclass"
+  pvcLabel: "vgs-snap-label"
+  # pvcList:
+  #   - "pvcName1"
+  #   - "pvcName2"
+```
+| Parameter           | Description                                                  | Required | Default |
+| :------------------ | :----------------------------------------------------------- | :------- | :------ |
+| name                | Name of snapshot to be taken. Each name must be in the namespace, and each name must be 13 characters or less. | true     | -       |
+| namespace           | The namespace that the snapshot lives in.                    | true     | -       |
+| driverName          | Name of the Powerflex CSI driver.                            | true     | -       |
+| memberReclaimPolicy | Currently Not used. Instead `Deletion Policy` from specified VolumeSnapshotClass defines how to process individual VolumeSnapshot instances when the snapshot group is deleted. There are two options -- "Retain" to retain the snapshots, and "Delete" to delete the snapshots. | true     | -       |
+| volumesnapshotclass | Volume snapshot class name for VGS members.                  | true     | -       |
+| pvcLabel            | A label that can also be included in PVC yamls to specify a set of PVCs for the VGS. Either this or pvcList is required, but not both. | false    | -       |
+| pvcList             | A list of PVCs for the VGS. Either this or pvcLabel is required, but not both. | false    | -       |
+
+Run the command `kubectl create -f vg.yaml` to take the specified snapshot.
+
+### How to create policy based Volume Group Snapshots  
+Currently, array based policies are not supported. This will be addressed in an upcoming release. For a temporary solution, cronjob can be used to mimic policy based Volume Group Snapshots. The only supported policy is how often the group should be created. To create a cronjob that creates a volume group snapshot periodically, use the template found in samples/ directory. Once the template is filled out, use the command `kubectl create -f samples/cron-template.yaml` to create the configmap and cronjob. 
+>Note: Cronjob is only supported on Kubernetes versions 1.21 or higher 
+
+### Deleting policy based Volume Group Snapshots  
+Currently, automatic deletion of Volume Group Snapshots is not supported. All deletion must be done manually.
+
+## Testing
+To build the unit tests, run `make unit-test`
+
+To build the integration tests, run `make int-test`
+  Additional steps are required to run integration tests.
+  For more information, consult the [integration test README](test/integration-test/README.md) 
+
+To run the helm tests, consult the [helm test README](test/helm/README.MD)
+
+## Troubleshooting
+To get the logs from VGS, do `kubectl logs POD-NAME vg-snapshotter`
+
+| Symptoms | Prevention, Resolution or Workaround |
+|------------|--------------|
+| Snapshot creation fails with `VG name exceedes 13 characters` | In the VolumeGroup.yaml file, change the name to something with 13 characters or less |
+| Snapshot creation fails with `no matches for kind \"DellCsiVolumeGroupSnapshot\" in version \"volumegroup.storage.dell.com/` | CRD is not created. Run `make install` to install CRD for Volume Group Snapshotter |
+| `kubectl describe vgs VGS-NAME` shows its Status.Status is `error` | Driver fails to create VG on array |
+| `kubectl describe vgs VGS-NAME` shows its Status.Status is `incomplete` | VG is created ok on array, controller fails to create snapshot/snapshotcontent |
+| Snapshot deletion fails with `VG Snapshotter status is incomplete` | Ensure you use the latest CRDs available in config/crd/bases/ | 
 
 

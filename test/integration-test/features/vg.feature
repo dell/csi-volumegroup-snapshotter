@@ -3,65 +3,82 @@ Feature: VxFlex OS CSI interface
   I want to run a system test
   So that I know the service functions correctly.
 
-@vg
-Scenario: Call Create VolumesGroupSnapshot happy path
+Scenario: Call Create and Delete Volume happy path
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
   And I Call Create 2 Volumes "vg-int" "8"
-  When I Call Test Create VG 
+  When I Call Test Create VG
+  Then There are No Errors
+  When I Call Test Delete VG
   Then There are No Errors
   And I Call Clean up Volumes On Array
 
-@vg
+Scenario: Call Create and Delete Volume reconcile retry VS error
+  Given a Vgs Controller
+  And I Call Clean up Volumes On Array
+  And I Call Create 2 Volumes "vg-int" "8"
+  When I Call Test Reconcile Error VG For "VS"
+  Then There are No Errors
+  When I Call Test Delete VG
+  Then There are No Errors
+  And I Call Clean up Volumes On Array
+
+Scenario: Call Create and Delete Volume reconcile retry VC error
+  Given a Vgs Controller
+  And I Call Clean up Volumes On Array
+  And I Call Create 2 Volumes "vg-int" "8"
+  When I Call Test Reconcile Error VG For "VC"
+  Then There are No Errors
+  When I Call Test Delete VG
+  Then There are No Errors
+  And I Call Clean up Volumes On Array
+
+
 Scenario: Call Create VolumesGroupSnapshot happy path idempotent case
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int1" "8"
+  And I Call Create 2 Volumes "vg-ok" "8"
   When I Call Test Create VG
   Then There are No Errors
   When I Call Test Create VG
   Then There are No Errors
   And I Call Clean up Volumes On Array
 
-@vg
 Scenario: Call Create VolumesGroupSnapshot happy path same label new vg name
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int2" "8"
+  And I Call Create 2 Volumes "vg-label" "8"
   When I Call Test Create VG
   Then There are No Errors
-  And I Set VG name "vg-int-snap-two"
+  And I Set VG name "vg-int-two"
   And I Set PVC Label "vg-int-snap-label"
   When I Call Test Create VG
   Then There are No Errors
   And I Call Clean up Volumes On Array
 
-@vg
+ Scenario: Call Create VolumesGroupSnapshot happy path same label different namspace pvc label missing
+   Given a Vgs Controller
+   And I Call Clean up Volumes On Array
+   And I Call Create 2 Volumes "vg-int4" "8"
+   When I Call Test Create VG
+   Then There are No Errors
+   And I Set Namespace "nsthree"
+   And I Force PVC Label Error "vg-int-wrong-label"
+   When I Call Test Create VG
+   Then The Error Message Should Contain "pvc with label missing"
+   And I Call Clean up Volumes On Array
+
 Scenario: Call Create VolumesGroupSnapshot same label different namspace label Request is idempotent
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int3" "8"
-  And I Set VG name "vg-int-snap-three"
+  And I Call Create 2 Volumes "vg-label-diff" "8"
+  And I Set VG name "vg-int-three"
   When I Call Test Create VG
   Then There are No Errors
   And I Set Namespace "nstwo"
   When I Call Test Create VG
   And I Call Clean up Volumes On Array
 
-@wip
-Scenario: Call Create VolumesGroupSnapshot happy path same label different namspace pvc label missing
-  Given a Vgs Controller
-  And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int4" "8"
-  When I Call Test Create VG
-  Then There are No Errors
-  And I Set Namespace "nsthree"
-  And I Force PVC Label Error "vg-int-wrong-label"
-  When I Call Test Create VG
-  Then The Error Message Should Contain "pvc with label missing"
-  And I Call Clean up Volumes On Array
-
-@vg
 Scenario: Call Create VolumesGroupSnapshot happy path non default array
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
@@ -72,8 +89,6 @@ Scenario: Call Create VolumesGroupSnapshot happy path non default array
   Then There are No Errors
   And I Call Clean up Volumes On Array
 
-
-@vg
 Scenario: Call Create VolumesGroupSnapshot volumes in different system with same label
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
@@ -84,17 +99,14 @@ Scenario: Call Create VolumesGroupSnapshot volumes in different system with same
   Then The Error Message Should Contain "systemIDs are different"
   And I Call Clean up Volumes On Array
 
-
-@vg
 Scenario: Call Create VolumesGroupSnapshot with no matching volumes
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-int6" "8"
-  And I Force PVC Label Error "vg-int-wrong-label"
+  And I Force PVC Label Error "vg-int-wronglabel"
   When I Call Test Create VG
   Then The Error Message Should Contain "pvc with label missing"
   And I Call Clean up Volumes On Array
 
-@vg
 Scenario: Call Create VolumesGroupSnapshot with no matching pv for pvc
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-int7" "8"
@@ -103,7 +115,6 @@ Scenario: Call Create VolumesGroupSnapshot with no matching pv for pvc
   Then The Error Message Should Contain "unable to find pv"
   And I Call Clean up Volumes On Array
 
-@vg
 Scenario: Call Create VolumesGroupSnapshot with no pre-req vsc for snapshots
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-int8" "8"
@@ -112,26 +123,6 @@ Scenario: Call Create VolumesGroupSnapshot with no pre-req vsc for snapshots
   Then The Error Message Should Contain "VolumeSnapshotClass.snapshot.storage.k8s.io no-vsc-for-vg not found"
   And I Call Clean up Volumes On Array
 
-@vg
-Scenario: Call Create VolumesGroupSnapshot k8s object has name but empty vgname sent in reconcile.
-  Given a Vgs Controller
-  And I Call Create 2 Volumes "vg-int9" "8"
-  And I Force Driver Error "vg-int-no-vg-name"
-  When I Call Test Create VG
-  Then The Error Message Should Contain "CreateVolumeGroupSnapshotRequest needs Name to be set"
-  And I Call Clean up Volumes On Array
-
-
-@vg
-Scenario: Call Create VolumesGroupSnapshot k8s object has bad vgname
-  Given a Vgs Controller
-  And I Call Create 2 Volumes "vg-int10" "8"
-  And I Force Bad VG Error "-1"
-  When I Call Test Create VG
-  Then The Error Message Should Contain "CreateVolumeGroupSnapshotRequest needs Name to be set"
-  And I Call Clean up Volumes On Array
-
-@vg
 Scenario: Call Create VolumesGroupSnapshot response process hit error during create VolumeSnapshotContent
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vc" "8"
@@ -140,7 +131,6 @@ Scenario: Call Create VolumesGroupSnapshot response process hit error during cre
   Then The Error Message Should Contain "unable to create VolsnapContent"
   And I Call Clean up Volumes On Array
 
-@vg
 Scenario: Call Create VolumesGroupSnapshot response process hit error during update vg
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vc1" "8"
@@ -149,7 +139,6 @@ Scenario: Call Create VolumesGroupSnapshot response process hit error during upd
   Then The Error Message Should Contain "unable to update VG"
   And I Call Clean up Volumes On Array
 
-@vg
 Scenario: Call Create VolumesGroupSnapshot response process hit error during update status for VolumeSnapshotContent
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vc2" "8"
@@ -159,11 +148,17 @@ Scenario: Call Create VolumesGroupSnapshot response process hit error during upd
   And I Call Clean up Volumes On Array
 
 
-@vp
 Scenario: Call Create VolumesGroupSnapshot response process hit error during create VolumeSnapshot
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vsc1" "8"
   And I Force Create VS Error "response-create-error-vs"
   When I Call Test Create VG
   Then The Error Message Should Contain "unable to create Volsnap"
+  And I Call Clean up Volumes On Array
+
+Scenario: Call Driver Verification for probing driver name and verifying it for creating vg
+  Given a Vgs Controller
+  And I Call Create 2 Volumes "vg-wer1" "8"
+  When I Call Test Create VG With BadVsc
+  Then The Error Message Should Contain "VG Snapshotter vg create failed, VolumeSnapshotClass driver name does not match volumegroupsnapshotter"
   And I Call Clean up Volumes On Array

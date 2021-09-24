@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,21 +27,34 @@ import (
 type DellCsiVolumeGroupSnapshotSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	DriverName          string `json:"driverName"`
-	MemberReclaimPolicy string `json:"memberReclaimPolicy"`
-	Volumesnapshotclass string `json:"volumesnapshotclass"`
-	PvcLabel            string `json:"pvcLabel"`
+	DriverName          string              `json:"driverName"`
+	MemberReclaimPolicy MemberReclaimPolicy `json:"memberReclaimPolicy"`
+	Volumesnapshotclass string              `json:"volumesnapshotclass"`
+	PvcLabel            string              `json:"pvcLabel,omitempty"`
+	PvcList             []string            `json:"pvcList,omitempty"`
 }
+
+// MemberReclaimPolicy describes a policy for end-of-life maintenance of VGS
+// +kubebuilder:validation:Enum=Delete;Retain
+type MemberReclaimPolicy string
+
+const (
+	MemberReclaimDelete = "Delete"
+
+	MemberReclaimRetain = "Retain"
+)
 
 // DellCsiVolumeGroupSnapshotStatus defines the observed state of DellCsiVolumeGroupSnapshot
 type DellCsiVolumeGroupSnapshotStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	SnapshotGroupID   string      `json:"snapshotGroupID"`
+	SnapshotGroupName string      `json:"snapshotGroupName"`
 	Snapshots         string      `json:"snapshots"`
 	CreationTime      metav1.Time `json:"creationTime,omitempty"`
 	ReadyToUse        bool        `json:"readyToUse,omitempty"`
 	ContentReadyToUse bool        `json:"contentReadyToUse,omitempty"`
+	Status            string      `json:"status,omitempty"`
 }
 
 // +kubebuilder:validation:Optional

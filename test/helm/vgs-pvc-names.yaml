@@ -1,0 +1,13 @@
+apiVersion: volumegroup.storage.dell.com/v1alpha2
+kind: DellCsiVolumeGroupSnapshot
+metadata:
+  name: "vgs-helm-test"
+  namespace: "helmtest-vxflexos"
+spec:
+  driverName: "csi-vxflexos.dellemc.com"
+  memberReclaimPolicy: "Delete"
+  volumesnapshotclass: "vxflexos-snapclass"
+  pvcList:
+    - "pvol0"
+    - "pvol1"
+    - "pvol2"
