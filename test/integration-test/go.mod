@@ -4,7 +4,7 @@ replace github.com/dell/dell-csi-extensions/volumeGroupSnapshot => ../../dell-cs
 
 replace github.com/dell/dell-csi-volumegroup-snapshotter => ../../
 
-replace github.com/dell/csi-vxflexos => ./csi-vxflexos
+replace github.com/dell/csi-vxflexos => ./csi-powerflex
 
 // replace github.com/dell/goscaleio => ./csi-vxflexos/goscaleio
 
