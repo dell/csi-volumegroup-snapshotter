@@ -90,15 +90,15 @@ Spec:
 Status:
   Creation Time:        2021-08-20T08:56:16Z
   Ready To Use:         true
-  Snapshot Group ID:    1235e15806d1ec0f-b0eec05600000003
-  Snapshot Group Name:  demo-vg-20082021-142241
-  Snapshots:            demo-vg-20082021-142241-0-pvol0,demo-vg-20082021-142241-1-pvol2,demo-vg-20082021-142241-2-pvol1
+  Snapshot Group ID:    4d4a2e5a36080e0f-b0eec05600000003
+  Snapshot Group Name:  
+  Snapshots:            c685412100000013-snap-0-pvol2,c685412200000014-snap-1-pvol0,c685412300000015-snap-2-pvol1
   Status:               Complete
 Events:
   Type    Reason   Age   From                              Message
   ----    ------   ----  ----                              -------
-  Normal  Updated  41s   dell-csi-volumegroup-snapshotter  Created VG snapshotter vg with name: demo-vg
-  Normal  Updated  41s   dell-csi-volumegroup-snapshotter  Updated VG snapshotter vg with name: demo-vg
+  Normal  Updated  41s   csi-volumegroup-snapshotter  reated snapshot consistency group on array with id: 4d4a2e5a36080e0f-bab2657800000003
+  Normal  Updated  41s   csi-volumegroup-snapshotter  Created volume group with id: 4d4a2e5a36080e0f-bab2657800000003
 ```
 Some of the above fields are described here:
 
@@ -108,7 +108,7 @@ Some of the above fields are described here:
 | Creation Time       | Time that the snapshot was taken.                                   |
 | Ready To Use        | Field defining whether the VGS is ready to use.                     |
 | Snapshot Group ID   | Group ID for the VGS.                                               |
-| Snapshot Group Name | Unique, timestamped name for the VGS (date format: DDMMYYYY-HHMMSS) |
+| Snapshot Group Name | snapshot group name on array. Note for Powerflex there is no name   |
 | Snapshots           | List of Volume Snapshots contained in the group.                    |
 | Status              | Overall status of the VGS.                                          |
 
@@ -145,6 +145,9 @@ Run the command `kubectl create -f vg.yaml` to take the specified snapshot.
 ### How to create policy based Volume Group Snapshots  
 Currently, array based policies are not supported. This will be addressed in an upcoming release. For a temporary solution, cronjob can be used to mimic policy based Volume Group Snapshots. The only supported policy is how often the group should be created. To create a cronjob that creates a volume group snapshot periodically, use the template found in samples/ directory. Once the template is filled out, use the command `kubectl create -f samples/cron-template.yaml` to create the configmap and cronjob. 
 >Note: Cronjob is only supported on Kubernetes versions 1.21 or higher 
+
+### VolumeSnapshotContent watcher
+A VolumeSnapshotContent watcher is implemented to watch for VG's managing VolumeSnapshotContent. When any of the VolumeSnapshotContents get deleted, its managing VG, if there is one, will update `Status.Snapshots` to remove that snapshot. If all the snapshots are deleted, the VG will be also deleted automatically. 
 
 ### Deleting policy based Volume Group Snapshots  
 Currently, automatic deletion of Volume Group Snapshots is not supported. All deletion must be done manually.

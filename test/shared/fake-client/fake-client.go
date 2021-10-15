@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	storagev1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/common"
+	storagev1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	snapv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
 
@@ -43,7 +43,8 @@ type Client struct {
 
 type MockUtils struct {
 	FakeClient *Client
-	Specs      common.Common
+	// FakeClient client.WithWatch
+	Specs common.Common
 }
 
 func getKey(obj runtime.Object) (StorageKey, error) {
@@ -280,6 +281,7 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 			if err != nil {
 				return err
 			}
+
 			delete(f.Objects, k2)
 		}
 	}

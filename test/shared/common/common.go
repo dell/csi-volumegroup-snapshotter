@@ -1,8 +1,8 @@
 package common
 
 import (
-	"github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
-	storagev1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
+	"github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	storagev1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

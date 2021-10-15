@@ -139,6 +139,8 @@ github.com/cucumber/messages-go/v16 v16.0.1/go.mod h1:EJcyR5Mm5ZuDsKJnT2N9KRnBK3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/dell/csi-vxflexos v1.6.0 h1:aZjxBN11KSUQjgUOym0iZJEoVKMI8uMd7sXIYrZoGaw=
+github.com/dell/csi-vxflexos v1.6.0/go.mod h1:EKrpNnO8f/vwaENROJJ7eQMOnNRfJZzD9fooA8zX/Yc=
 github.com/dell/dell-csi-extensions/podmon v1.0.0 h1:QoxioaFfjIP6cJ4s166A1JhgxIXWe/H0A60edO6nf4E=
 github.com/dell/dell-csi-extensions/podmon v1.0.0/go.mod h1:Jjt+zHbLIZ3qJMug17WBYdz7wu90+hd65kgJwv8ZOec=
 github.com/dell/gocsi v1.3.1/go.mod h1:doJru1XfPHSmROXxtAey6eQ8QseoFKaMtA8YaWCb0mU=

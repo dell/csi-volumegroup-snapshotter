@@ -1,6 +1,6 @@
-module github.com/dell/dell-csi-volumegroup-snapshotter
+module github.com/dell/csi-volumegroup-snapshotter
 
-replace github.com/dell/dell-csi-volumegroup-snapshotter => ./
+replace github.com/dell/csi-volumegroup-snapshotter => ./
 
 go 1.16
 
@@ -14,6 +14,7 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.2
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210908191846-a5e095526f91 // indirect
+	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602 // indirect
 	golang.org/x/sys v0.0.0-20210908233432-aa78b53d3365 // indirect
 	google.golang.org/grpc v1.40.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

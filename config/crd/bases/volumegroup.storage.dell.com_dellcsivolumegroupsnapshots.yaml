@@ -20,8 +20,15 @@ spec:
   versions:
   - additionalPrinterColumns:
     - description: Name of the VG
-      jsonPath: .spec.volumeGroupName
+      jsonPath: .status.snapshotGroupName
       name: VolumeGroupname
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: CreationTime
+      type: date
+    - description: Status of the VG
+      jsonPath: .status.status
+      name: Status
       type: string
     name: v1alpha2
     schema:

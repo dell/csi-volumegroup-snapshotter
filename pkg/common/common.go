@@ -18,7 +18,7 @@ package common
 // Constants
 const (
 	// DellCSIVolumegroup - Name of the sidecar controller manager
-	DellCSIVolumegroup = "dell-csi-volumegroup-snapshotter"
+	DellCSIVolumegroup = "csi-volumegroup-snapshotter"
 	LabelSnapshotGroup = "snapshotGroup"
 
 	EventTypeNormal       = "Normal"
@@ -29,4 +29,5 @@ const (
 	EventStatusIncomplete = "Incomplete"
 	EventStatusComplete   = "Complete"
 	FinalizerName         = "vgFinalizer"
+	ExistingGroupID       = "existingSnapshotGroupID"
 )

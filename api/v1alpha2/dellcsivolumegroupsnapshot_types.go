@@ -59,7 +59,9 @@ type DellCsiVolumeGroupSnapshotStatus struct {
 
 // +kubebuilder:validation:Optional
 // +kubebuilder:resource:scope=Namespaced,shortName={"vgs"}
-// +kubebuilder:printcolumn:name="VolumeGroupname",type=string,JSONPath=`.spec.volumeGroupName`,description="Name of the VG"
+// +kubebuilder:printcolumn:name="VolumeGroupname",type=string,JSONPath=`.status.snapshotGroupName`,description="Name of the VG"
+// +kubebuilder:printcolumn:name="CreationTime",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.status`,description="Status of the VG"
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 

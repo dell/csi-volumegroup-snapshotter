@@ -20,37 +20,41 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	volumegroupv1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	"github.com/dell/csi-volumegroup-snapshotter/pkg/common"
+	csidriver "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
-	volumegroupv1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/common"
-	csidriver "github.com/dell/dell-csi-volumegroup-snapshotter/pkg/csiclient"
 	uuid "github.com/google/uuid"
 
 	"github.com/go-logr/logr"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	sclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
+	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
+	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	t1 "k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	reconcile "sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 )
 
 var log logr.Logger
-var groupNameMutex sync.Mutex
-var lastGroupName string
 
 // DellCsiVolumeGroupSnapshotReconciler reconciles a DellCsiVolumeGroupSnapshot object
 type DellCsiVolumeGroupSnapshotReconciler struct {
@@ -79,29 +83,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	log = r.Log.WithValues("dellcsivolumegroupsnapshot", req.NamespacedName)
 
 	log.Info("VG Snapshotter Triggered")
-	var err error
 
-	// if created from cron job, the name would include a timstamp
-	// month           day                        year       hour               minute/second
-	// (0[1-9]|1[0-2]) (0[1-9]|[1-2][0-9]|3[0-1]) [0-9]{2} - (2[0-3]|[01][0-9]) ([0-5][0-9]){2}
-	re := regexp.MustCompile(`(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])[0-9]{2}-(2[0-3]|[01][0-9])([0-5][0-9]){2}`)
-	cronJob := re.MatchString(req.Name)
-
-	// If req name is longer than 13 characters and not from cron job, return error
-	if len(req.Name) > 13 && !cronJob {
-		err = errors.New("VG name exceedes 13 characters")
-		log.Error(err, "VG Snapshotter VolumeGroup vg create failed", "req name", req.Name)
-		return ctrl.Result{}, err
-	}
-
-	// If req name is longer than 27 characters and from cron job, return error
-	if len(req.Name) > 27 {
-		err = errors.New("VG name from cron job with a timestamp may not exceedes 27 characters")
-		log.Error(err, "VG Snapshotter VolumeGroup vg create failed", "req name", req.Name)
-		return ctrl.Result{}, err
-	}
-
-	// to delete :  volumesnapshotcontent  remove finalizer , this rids of content and snapshot
 	schemaMutex := sync.RWMutex{}
 	schemaMutex.Lock()
 	schemaErr := s1.AddToScheme(r.Scheme)
@@ -123,136 +105,140 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 			err := r.deleteVg(ctx, vg)
 			return ctrl.Result{}, err
 		}
-
 		log.Info("VG Snapshotter stauts is incomplete. If you still want to delete, manually clean up")
 		return ctrl.Result{}, fmt.Errorf("VG Snapshotter status is incomplete. Nothing is deleted")
 	}
 
 	if vg.Status.SnapshotGroupID != "" && vg.Status.Status == common.EventStatusComplete {
 		// idempotent case
-		log.Info("VG Snapshotter loop ..vg exists")
+		log.Info("VG Snapshotter reconcile ..vg exists", vg.Name, vg.Status.SnapshotGroupID)
+		r.EventRecorder.Eventf(vg, v1.EventTypeWarning, common.EventReasonUpdated, "VG exists")
 		return ctrl.Result{}, nil
+	}
+
+	// set vg status to pending
+	vg.Status.Status = common.EventStatusPending
+	if err := r.Status().Update(ctx, vg); err != nil {
+		log.Error(err, "VG Snapshotter vg status pending update")
 	}
 
 	// when user provides both pvc label and pvc name list, log error and return
 	if vg.Spec.PvcLabel != "" && vg.Spec.PvcList != nil {
 		err := fmt.Errorf("PvcLabel and PvcList can't be provided at the same time. PvcLabel=%s, PvcList=%v", vg.Spec.PvcLabel, vg.Spec.PvcList)
 		log.Error(err, "VG Snapshotter vg create failed both pvc label and name list found")
-		r.EventRecorder.Eventf(vg, v1.EventTypeWarning, common.EventReasonUpdated, "Failed to create Snapshot of volumegroup with both pvc label and list")
+		r.EventRecorder.Eventf(vg, v1.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: error: both pvc label and list not supported ")
 		return ctrl.Result{}, err
 	}
-
-	// set vg status
-	vg.Status.Status = common.EventStatusPending
-	// set the namespace based on request
-	vg.Namespace = req.NamespacedName.Namespace
 
 	// dont proceed if snapshotclass is not found
 	snapClassName := vg.Spec.Volumesnapshotclass
 	sc := new(s1.VolumeSnapshotClass)
-	if err := r.Get(ctx, client.ObjectKey{Name: snapClassName}, sc); err != nil {
+	if scerr := r.Get(ctx, client.ObjectKey{Name: snapClassName}, sc); scerr != nil {
+		vg.Status.Status = common.EventStatusError
 		if err := r.Status().Update(ctx, vg); err != nil {
 			log.Error(err, "VG Snapshotter vg status update")
 		}
-		log.Error(err, "VG Snapshotter vg create failed VolumeSnapshotClass not found")
-		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg: error: %s", err.Error())
-		return ctrl.Result{}, err
+		log.Error(scerr, "VG Snapshotter vg create failed VolumeSnapshotClass not found")
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: error: %s", scerr.Error())
+		return ctrl.Result{}, scerr
 	}
 
 	if !r.driverVerification(sc) {
-		err = errors.New("VG Snapshotter vg create failed, VolumeSnapshotClass driver name does not match volumegroupsnapshotter")
-		log.Error(err, sc.Driver)
+		derr := errors.New("VG Snapshotter vg create failed, VolumeSnapshotClass driver name does not match volumegroupsnapshotter")
+		log.Error(derr, sc.Driver)
+		vg.Status.Status = common.EventStatusError
 		if err := r.Status().Update(ctx, vg); err != nil {
 			log.Error(err, "VG Snapshotter vg status update")
 		}
-		return ctrl.Result{}, err
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: error: %s", derr.Error())
+		return ctrl.Result{}, derr
 	}
 
 	// get source volume ids
 	ns := vg.Namespace
 	var srcVolIds []string
 	var volIdPvcNameMap map[string]string
+	var volErr error
 	if vg.Spec.PvcList != nil {
-		srcVolIds, volIdPvcNameMap, err = r.getSourceVolIdsFromPvcName(ctx, vg.Spec.PvcList, ns)
+		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromPvcName(ctx, vg.Spec.PvcList, ns)
 	} else if vg.Spec.PvcLabel != "" {
-		srcVolIds, volIdPvcNameMap, err = r.getSourceVolIdsFromLabel(ctx, vg.Spec.PvcLabel, ns)
+		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromLabel(ctx, vg.Spec.PvcLabel, ns)
 	} else {
 		// snapshot pvcs under given namespace
-		srcVolIds, volIdPvcNameMap, err = r.getSourceVolIdsFromNs(ctx, ns)
+		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromNs(ctx, ns)
 	}
 
-	if err != nil {
-		log.Error(err, "VG Snapshotter VolumeGroup vg create failed, source volume ids not found")
-		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg: %s error: %s", req.Name, err.Error())
-		return ctrl.Result{}, err
+	if volErr != nil {
+		vg.Status.Status = common.EventStatusError
+		if err := r.Status().Update(ctx, vg); err != nil {
+			log.Error(err, "VG Snapshotter VolumeGroup vg create failed, source volume ids not found")
+		}
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: %s error: %s", req.Name, volErr.Error())
+		return ctrl.Result{}, volErr
 	}
 
 	// if req name has a suffix timestamp, just use it
-	var groupName string
-	if cronJob {
-		groupName = req.Name
-	} else {
-		groupName = vg.Status.SnapshotGroupName
-	}
+	groupName := req.Name
 
-	if groupName == "" {
-		groupName = groupNameGenerator(req.Name)
-		log.Info("VG Snapshotter reconcile", "generated unique snapshot group name", groupName)
-	}
+	// set VG name in status if array supports it
 
 	sort.Strings(srcVolIds)
 	// make grpc call to driver
-	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIds, nil)
+	otherParams := make(map[string]string)
+	otherParams[common.ExistingGroupID] = vg.Status.SnapshotGroupID
+	log.Info("VG Snapshotter vg create", "existing GroupID", otherParams[common.ExistingGroupID])
+	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIds, otherParams)
 	if grpcErr != nil {
 		vg.Status.Status = common.EventStatusError
 		if err := r.Status().Update(ctx, vg); err != nil {
-			log.Error(err, "VG Snapshotter vg status update")
+			log.Error(err, "VG Snapshotter vg status create vg using driver update")
 		}
 		log.Error(grpcErr, "VG Snapshotter vg create failed in csi driver. Snapshot consistency group may exist on array. Please check and clean up manually")
-		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg: %s error: %s", req.Name, grpcErr)
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: %s error: %s", groupName, grpcErr)
 		return ctrl.Result{}, grpcErr
 	}
-	r.EventRecorder.Eventf(vg, common.EventTypeNormal, common.EventReasonUpdated, "Created VG snapshotter vg with name: %s", req.Name)
+	r.EventRecorder.Eventf(vg, common.EventTypeNormal, common.EventReasonUpdated, "Created snapshot consistency group on array with id: %s", res.SnapshotGroupID)
 
 	// add finalizer to vg
 	if !containString(vg.GetFinalizers(), common.FinalizerName) {
-		log.Info("VG Snapshotter vg create adding finalizer to vg", "vg name", vg.Name)
+		log.Info("VG Snapshotter vg create adding finalizer to vg", "vg name", groupName)
 		controllerutil.AddFinalizer(vg, common.FinalizerName)
-		vg.Status.Status = common.EventStatusPending
+		// update VG
 		if err := r.Update(ctx, vg); err != nil {
 			log.Error(err, "VG Snapshotter vg create failed, unable to update to add finalizer")
 			return ctrl.Result{}, err
 		}
 	}
 
-	// get the latest vg
-	if err := r.Get(ctx, req.NamespacedName, vg); err != nil {
-		return ctrl.Result{}, err
+	if vg.Status.SnapshotGroupID == "" && res.SnapshotGroupID != "" {
+		log.Info("VG Snapshotter vg create set group id", "vg name", groupName, "vg id", res.SnapshotGroupID)
+		vg.Status.SnapshotGroupID = res.SnapshotGroupID
+		if err := r.Update(ctx, vg); err != nil {
+			log.Error(err, "VG Snapshotter vg create failed, unable to update to add group id")
+			return ctrl.Result{}, err
+		}
 	}
 
 	// process create VG response
-	if _, err := r.processResponse(ctx, res, volIdPvcNameMap, vg, sc, groupName); err != nil {
+	if _, perr := r.processResponse(ctx, res, volIdPvcNameMap, vg, sc, groupName); perr != nil {
 		vg.Status.Status = common.EventStatusIncomplete
-		vg.Status.SnapshotGroupName = groupName
+		vg.Status.SnapshotGroupID = res.SnapshotGroupID
 		if err := r.Status().Update(ctx, vg); err != nil {
-			// TODO: set deletion timestamp
-			log.Error(err, "VG Snapshotter vg status update")
+			log.Error(err, "VG Snapshotter vg created ok unable to process create VG response ", "groupName", groupName)
 		}
-		log.Error(err, "VG Snapshotter vg created ok unable to process create VG response ", "groupName", groupName)
-		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg: error: %s", err.Error())
-		return ctrl.Result{}, err
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: error: %s", perr.Error())
+		return ctrl.Result{}, perr
 	}
 
-	// save status and vg-id to k8s vg object
+	// save status after processing VG response
 	if err := r.Status().Update(ctx, vg); err != nil {
-		// TODO: set deletion timestamp
-		log.Error(err, "VG Snapshotter vg created ok unable to update VG status")
-		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed to update Snapshot of volume group with name : %s error: %s", req.Name, err.Error())
+		log.Error(err, "VG Snapshotter vg created ok unable to update VG status after processing response ")
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: %s error: %s", groupName, err.Error())
 		return ctrl.Result{}, err
 	}
-	r.EventRecorder.Eventf(vg, common.EventTypeNormal, common.EventReasonUpdated, "Updated VG snapshotter vg with name: %s", req.Name)
+	r.EventRecorder.Eventf(vg, common.EventTypeNormal, common.EventReasonUpdated, "Created volume group with id: %s", res.SnapshotGroupID)
 
-	return ctrl.Result{}, grpcErr
+	return ctrl.Result{}, nil
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) driverVerification(sc *s1.VolumeSnapshotClass) bool {
@@ -334,12 +320,11 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 
 	snaps = strings.TrimRight(snaps, ",")
 	vg.Status = volumegroupv1alpha2.DellCsiVolumeGroupSnapshotStatus{
-		SnapshotGroupID:   res.SnapshotGroupID,
-		SnapshotGroupName: groupName,
-		Snapshots:         snaps,
-		CreationTime:      metav1.Time{Time: *createdAt},
-		ReadyToUse:        true,
-		Status:            common.EventStatusComplete,
+		SnapshotGroupID: res.SnapshotGroupID,
+		Snapshots:       snaps,
+		CreationTime:    metav1.Time{Time: *createdAt},
+		ReadyToUse:      true,
+		Status:          common.EventStatusComplete,
 	}
 
 	return ctrl.Result{}, nil
@@ -401,7 +386,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) deleteVg(
 				Name:      snapName,
 			}, snapshot); err != nil {
 				// user manually deleted this snapshot, continue deleting the others
-				log.Error(err, "VG Snapshotter can't find snap to delete", "snap name", snapName)
+				log.Info("VG Snapshotter can't find snap to delete", "snap name", snapName, "err", err)
 				continue
 			}
 
@@ -704,33 +689,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 
 }
 
-// groupNameGenerator: Take a name and add a timestamp to it
-func groupNameGenerator(name string) string {
-	// Grab the mutex and defer the unlock
-	groupNameMutex.Lock()
-	defer groupNameMutex.Unlock()
-
-	// generate timestamp
-	now := time.Now()
-	timestamp := fmt.Sprintf("%02d%02d%02d-%02d%02d%02d", now.Month(), now.Day(), now.Year()%100, now.Hour(), now.Minute(), now.Second())
-
-	// generate name.
-	groupName := name + "-" + timestamp
-
-	for lastGroupName == groupName {
-		// Make sure that we aren't using the same name twice in a row
-		time.Sleep(time.Second)
-		now = time.Now()
-		timestamp = fmt.Sprintf("%02d%02d%02d-%02d%02d%02d", now.Month(), now.Day(), now.Year()%100, now.Hour(), now.Minute(), now.Second())
-		groupName = name + "-" + timestamp
-	}
-	lastGroupName = groupName
-
-	log.Info("VG Snapshotter reconcile groupNameGenerator", "groupName in name generator", groupName)
-
-	return groupName
-}
-
 // get a list of source volume Ids, a map from these Ids to corresponding pvc names based on the given pvc label
 func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromLabel(ctx context.Context,
 	label string, ns string) ([]string, map[string]string, error) {
@@ -966,11 +924,133 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) GetReference(scheme *runtime.Sche
 	}, nil
 }
 
+func (r *DellCsiVolumeGroupSnapshotReconciler) ignoreUpdatePredicate() predicate.Predicate {
+	return predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			// Ignore updates to status in which case metadata.Generation does not change
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			// Evaluates to false if the object has been confirmed deleted.
+			return !e.DeleteStateUnknown
+		},
+	}
+}
+
+func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
+
+	var clientset sclient.Interface
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		// running unit test
+		clientset = sfakeclient.NewSimpleClientset()
+	} else {
+		clientset, err = sclient.NewForConfig(config)
+		if err != nil {
+			log.Error(err, "vg snapshotter volumesnapshotcontent watcher newforconfig err")
+			return err
+		}
+	}
+
+	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Hour))
+	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
+
+	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		DeleteFunc: r.HandleSnapContentDelete,
+	})
+
+	stop := make(chan struct{})
+	sharedInformerFactory.Start(stop)
+
+	return nil
+}
+
+func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj interface{}) {
+
+	content, ok := obj.(*s1.VolumeSnapshotContent)
+	if !ok {
+		err := fmt.Errorf("VG Snapshotter watcher volumesnapshotcontent watch fails to convert obj to vscontent")
+		log.Error(err, "cast error")
+		return
+	}
+
+	log.Info("VG Snapshotter watcher volumesnapcontent deleted:", "content name", content.Name)
+
+	ctx := context.Background()
+
+	// vgs-helm-test-1-pvol1
+	snapName := content.Spec.VolumeSnapshotRef.Name
+	ns := content.Spec.VolumeSnapshotRef.Namespace
+
+	snap := new(s1.VolumeSnapshot)
+	err := r.Get(ctx, client.ObjectKey{
+		Name:      snapName,
+		Namespace: ns,
+	}, snap)
+
+	if err != nil {
+		// Snap already deleted. Need to add label like "snapshotGroup=vgs-helm-test" to content also
+		log.Error(err, "VG Snapshotter watcher snapshotcontent watch can't find its bound snapshot %s")
+		return
+	}
+
+	vgsName := snap.Labels[common.LabelSnapshotGroup]
+	if vgsName != "" {
+		// This snapshot is created by VG
+
+		namespacedName := t1.NamespacedName{
+			Name:      vgsName,
+			Namespace: ns,
+		}
+
+		schemaMutex := sync.RWMutex{}
+		schemaMutex.Lock()
+		vg := new(volumegroupv1alpha2.DellCsiVolumeGroupSnapshot)
+
+		err := r.Get(ctx, namespacedName, vg)
+		if err == nil {
+			log.Info("VG Snapshotter watcher finds the deleted volumesnapshotcontent is created by a VGS", "VGS name", vg.Name)
+			snapshotsSlice := strings.Split(vg.Status.Snapshots, ",")
+
+			// try removing this snapshot from vgs snapshots list
+			for i, s := range snapshotsSlice {
+				if s == snapName {
+					// remove this element if match the deleted volumesnapshot
+					snapshotsSlice = append(snapshotsSlice[:i], snapshotsSlice[i+1:]...)
+					break
+				}
+			}
+
+			snapshotsString := strings.Join(snapshotsSlice, ",")
+			vg.Status.Snapshots = snapshotsString
+
+			if err := r.Status().Update(ctx, vg); err != nil {
+				log.Error(err, "VG Snapshotter failed to update status when snapshotcontent is deleted")
+			}
+
+			if snapshotsString == "" {
+				// All snapshotcontents have been deleted and we can delete the VG object
+				r.EventRecorder.Eventf(vg, v1.EventTypeWarning, common.EventReasonUpdated, "All managing snapshot contents are deleted")
+				log.Info("VG Snapshotter watcher all snapshots under vg has been deleted. Deleting VG object")
+				if err = r.Delete(ctx, vg); err != nil {
+					log.Error(err, "VG Snapshotter watcher failed to delete VG in snapshotcontent watcher")
+				}
+			}
+		}
+
+		schemaMutex.Unlock()
+	}
+}
+
 // SetupWithManager sets up the controller with the Manager.
 // watch For DellCsiVolumeGroupSnapshot events
 func (r *DellCsiVolumeGroupSnapshotReconciler) SetupWithManager(mgr ctrl.Manager, limiter ratelimiter.RateLimiter, maxReconcilers int) error {
+	go r.snapContentWatch()
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&volumegroupv1alpha2.DellCsiVolumeGroupSnapshot{}).
+		WithEventFilter(r.ignoreUpdatePredicate()).
 		WithOptions(reconcile.Options{
 			RateLimiter:             limiter,
 			MaxConcurrentReconciles: maxReconcilers,
