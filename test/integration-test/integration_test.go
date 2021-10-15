@@ -76,7 +76,7 @@ func init() {
 }
 
 func TestDummy(t *testing.T) {
-	return
+
 }
 
 // similar to driver integration test
@@ -94,7 +94,7 @@ func TestMain(m *testing.M) {
 	var opts = godog.Options{
 		Format: "pretty", // can define default values
 		Paths:  []string{"features"},
-		//Tags:   "wip",
+		// Tags:   "wip",
 	}
 	exitVal := godog.TestSuite{
 		Name:                 "godog",

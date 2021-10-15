@@ -6,7 +6,7 @@ Feature: VxFlex OS CSI interface
 Scenario: Call Create and Delete Volume happy path
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int" "8"
+  And I Call Create 2 Volumes "vg-int1" "8"
   When I Call Test Create VG
   Then There are No Errors
   When I Call Test Delete VG
@@ -16,7 +16,7 @@ Scenario: Call Create and Delete Volume happy path
 Scenario: Call Create and Delete Volume reconcile retry VS error
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int" "8"
+  And I Call Create 2 Volumes "vg-int2" "8"
   When I Call Test Reconcile Error VG For "VS"
   Then There are No Errors
   When I Call Test Delete VG
@@ -26,13 +26,12 @@ Scenario: Call Create and Delete Volume reconcile retry VS error
 Scenario: Call Create and Delete Volume reconcile retry VC error
   Given a Vgs Controller
   And I Call Clean up Volumes On Array
-  And I Call Create 2 Volumes "vg-int" "8"
+  And I Call Create 2 Volumes "vg-int3" "8"
   When I Call Test Reconcile Error VG For "VC"
   Then There are No Errors
   When I Call Test Delete VG
   Then There are No Errors
   And I Call Clean up Volumes On Array
-
 
 Scenario: Call Create VolumesGroupSnapshot happy path idempotent case
   Given a Vgs Controller
@@ -56,7 +55,7 @@ Scenario: Call Create VolumesGroupSnapshot happy path same label new vg name
   Then There are No Errors
   And I Call Clean up Volumes On Array
 
- Scenario: Call Create VolumesGroupSnapshot happy path same label different namspace pvc label missing
+Scenario: Call Create VolumesGroupSnapshot happy path same label different namspace pvc label missing
    Given a Vgs Controller
    And I Call Clean up Volumes On Array
    And I Call Create 2 Volumes "vg-int4" "8"
@@ -67,6 +66,18 @@ Scenario: Call Create VolumesGroupSnapshot happy path same label new vg name
    When I Call Test Create VG
    Then The Error Message Should Contain "pvc with label missing"
    And I Call Clean up Volumes On Array
+   
+Scenario: Call Create VolumesGroupSnapshot happy path same name different namspace
+   Given a Vgs Controller
+   And I Call Clean up Volumes On Array
+   And I Set Namespace "nsone-test"
+   And I Call Create 2 Volumes "vg-int4" "8"
+   When I Call Test Create VG
+   Then There are No Errors
+   And I Set Namespace "nstwo-test"
+   And I Call Create 2 Volumes "vg-int4" "8"
+   When I Call Test Create VG
+   Then There are No Errors
 
 Scenario: Call Create VolumesGroupSnapshot same label different namspace label Request is idempotent
   Given a Vgs Controller
@@ -147,7 +158,6 @@ Scenario: Call Create VolumesGroupSnapshot response process hit error during upd
   Then The Error Message Should Contain "unable to update VolsnapContent"
   And I Call Clean up Volumes On Array
 
-
 Scenario: Call Create VolumesGroupSnapshot response process hit error during create VolumeSnapshot
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vsc1" "8"
@@ -161,4 +171,11 @@ Scenario: Call Driver Verification for probing driver name and verifying it for 
   And I Call Create 2 Volumes "vg-wer1" "8"
   When I Call Test Create VG With BadVsc
   Then The Error Message Should Contain "VG Snapshotter vg create failed, VolumeSnapshotClass driver name does not match volumegroupsnapshotter"
+  And I Call Clean up Volumes On Array
+
+Scenario: Call HandleSnapContentDelete twice to clean up finalizer
+  Given a Vgs Controller
+  And I Call Create 2 Volumes "vg-snap-watch" "8"
+  When I Call Test Create VG And HandleSnapContentDelete
+  Then There are No Errors
   And I Call Clean up Volumes On Array

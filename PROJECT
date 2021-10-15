@@ -3,8 +3,8 @@ layout: go.kubebuilder.io/v3
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
-projectName: dell-csi-volumegroup-snapshotter
-repo: github.com/dell/dell-csi-volumegroup-snapshotter
+projectName: csi-volumegroup-snapshotter
+repo: github.com/dell/csi-volumegroup-snapshotter
 resources:
 - api:
     crdVersion: v1
@@ -13,6 +13,6 @@ resources:
   domain: storage.dell.com
   group: volumegroup
   kind: DellCsiVolumeGroupSnapshot
-  path: github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2
+  path: github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2
   version: v1alpha2
 version: "3"

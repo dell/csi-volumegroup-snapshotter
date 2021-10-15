@@ -15,6 +15,7 @@ fi
 
 echo "creating 3 volumes and sc"
 helm install -n ${NS} vgs vgs --values helmtest.yaml
+sleep 5
 echo "done creating 3 volumes and sc"
 echo "create vgs"
 kubectl create -f vgs-pvc-$1.yaml

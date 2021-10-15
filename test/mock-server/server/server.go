@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/stub"
 	csi_ext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/test/mock-server/stub"
 	"google.golang.org/grpc"
 )
 

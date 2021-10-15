@@ -17,14 +17,14 @@
                     "source_id": "111",
                     "readyToUse": true,
                     "CreationTime": 20200202,
-                    "Name": "hello1"
+                    "Name": "vg-snap-093021-222842-1-pvol1"
                 },
                 {
                     "snap_id": "456",
                     "source_id": "222",
                     "readyToUse": true,
                     "CreationTime": 20200202,
-                    "Name": "hello2"
+                    "Name": "vg-snap-093021-222842-0-pvol0"
                 }
             ],
             "SnapshotGroupID": "123",

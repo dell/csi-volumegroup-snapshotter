@@ -11,12 +11,12 @@ import (
 	"time"
 
 	csi "github.com/container-storage-interface/spec/lib/go/csi"
-	storagev1alpha2 "github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
-	controller "github.com/dell/dell-csi-volumegroup-snapshotter/controllers"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/connection"
-	csiclient "github.com/dell/dell-csi-volumegroup-snapshotter/pkg/csiclient"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/common"
-	fake_client "github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/fake-client"
+	storagev1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	controller "github.com/dell/csi-volumegroup-snapshotter/controllers"
+	"github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
+	csiclient "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
+	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
+	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 	core_v1 "k8s.io/api/core/v1"
 
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
@@ -102,6 +102,7 @@ func VGFeatureContext(s *godog.ScenarioContext) {
 	s.Step(`^a Vgs Controller$`, suite.aVgsController)
 	s.Step(`^I Call Clean up Volumes On Array$`, suite.CleanupVolsOnArray)
 	s.Step(`^I Call Test Create VG$`, suite.iCallTestCreateVG)
+	s.Step(`^I Call Test Create VG And HandleSnapContentDelete$`, suite.iCallTestCreateVGAndHandleSnapContentDelete)
 	s.Step(`^I Call Test Reconcile Error VG For "([^"]*)"$`, suite.iCallTestReconcileErrorVGFor)
 	s.Step(`^I Call Test Delete VG$`, suite.iCallTestDeleteVG)
 	s.Step(`^I Call Test Create VG With BadVsc$`, suite.iCallTestCreateVGWithBadVsc)
@@ -469,12 +470,96 @@ func (suite *FakeVGTestSuite) aVgsController() error {
 	return nil
 }
 
+func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() error {
+	suite.makeFakeVSC()
+
+	for _, srcId := range suite.srcVolIDs {
+		// pre-req pv must  exist
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcId)
+		_ = suite.makeFakePV(srcId)
+		_ = suite.makeFakePVC(srcId)
+	}
+
+	suite.makeFakeVG()
+
+	vgReconcile, req := suite.makeReconciler()
+
+	ctx := context.Background()
+
+	_, err := vgReconcile.Reconcile(ctx, req)
+	if err != nil {
+		suite.addError(err)
+		return err
+	}
+
+	vg := new(storagev1alpha2.DellCsiVolumeGroupSnapshot)
+	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+		Namespace: ns,
+		Name:      reconcile_vgname,
+	}, vg)
+	if err != nil {
+		suite.addError(err)
+		return err
+	}
+
+	for _, snapshotName := range strings.Split(vg.Status.Snapshots, ",") {
+		snapshot := new(s1.VolumeSnapshot)
+
+		err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+			Namespace: ns,
+			Name:      snapshotName,
+		}, snapshot)
+		if err != nil {
+			suite.addError(err)
+			return err
+		}
+
+		contentName := *snapshot.Spec.Source.VolumeSnapshotContentName
+		content := new(s1.VolumeSnapshotContent)
+
+		err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+			Name: contentName,
+		}, content)
+		if err != nil {
+			suite.addError(err)
+			return err
+		}
+
+		vgReconcile.HandleSnapContentDelete(content)
+	}
+
+	vg = new(storagev1alpha2.DellCsiVolumeGroupSnapshot)
+	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+		Namespace: ns,
+		Name:      vgname,
+	}, vg)
+
+	if !strings.Contains(err.Error(), "not found") {
+		suite.addError(err)
+		return err
+	}
+
+	return nil
+}
+
 // call reconcile to test vg snapshotter
 func (suite *FakeVGTestSuite) runVGReconcile() error {
 
+	vgReconcile, req := suite.makeReconciler()
+
+	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
+	_, err := vgReconcile.Reconcile(context.Background(), req)
+	if err != nil {
+		suite.addError(err)
+		return err
+	}
+	return nil
+}
+
+func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiVolumeGroupSnapshotReconciler, req reconcile.Request) {
 	// make a Reconciler object with grpc client
 	// notice Client is set to fake client :the k8s mock
-	vgReconcile := &controller.DellCsiVolumeGroupSnapshotReconciler{
+	vgReconcile = &controller.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        suite.mockUtils.FakeClient,
 		Log:           logf.Log.WithName("vg-controller"),
 		Scheme:        common.Scheme,
@@ -486,21 +571,14 @@ func (suite *FakeVGTestSuite) runVGReconcile() error {
 	// make a request object to pass to Reconcile method in controller
 	// this does not contain any k8s object , using the name passed in Reconcile can select
 	// object from fake-client in memory objects
-	req := reconcile.Request{
+	req = reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Namespace: ns,
 			Name:      reconcile_vgname,
 		},
 	}
 
-	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
-	_, err := vgReconcile.Reconcile(context.Background(), req)
-	if err != nil {
-		suite.addError(err)
-		return err
-	}
-	return nil
-
+	return
 }
 
 func (suite *FakeVGTestSuite) iCallTestDeleteVG() error {
@@ -571,7 +649,7 @@ func (suite *FakeVGTestSuite) iCallTestReconcileErrorVGFor(errorType string) err
 			suite.addError(err)
 		}
 	} else {
-		err = errors.New("Forced Reconcile Error did not occur")
+		err = errors.New("forced Reconcile Error did not occur")
 		testLog.Error(err, reconcile_vgname)
 		suite.addError(err)
 	}
@@ -779,17 +857,17 @@ func (suite *FakeVGTestSuite) verify() error {
 				for _, sn := range snames {
 
 					// for example vg-snap-090121-152109-0-vg-int-pvc-... get 090121-152109-0
-					re := regexp.MustCompile(`-(?P<sdigit>\d+-\d+-\d+)-.*`)
+					// vg-int-snap-1-vg-int-pvc-4d4a2e5a36080e0f-a23872e9000001f8
+					re := regexp.MustCompile(`-(?P<sdigit>\d+)-.*`)
 					matches := re.FindStringSubmatch(sn)
 					dIndex := re.SubexpIndex("sdigit")
-					testLog.V(1).Info("snap name regex match ", "index", matches[dIndex])
 
-					snamePrefix := vg + "-" + matches[dIndex] + "-" + PVC_NAME_PREFIX
+					testLog.Info("snap name ", "sn", sn)
+					testLog.Info("snap name ", "sn PVC_NAME_PREFIX", PVC_NAME_PREFIX)
 
-					if strings.Contains(sn, snamePrefix) {
-						testLog.Info("snap name regex match ", "sname", snamePrefix)
+					if matches != nil && dIndex != 0 {
+						testLog.Info("snap name ", "sn matches", matches[dIndex])
 					} else {
-						testLog.Info("snap name regex does not match ", "snamePrefix", snamePrefix)
 						err = fmt.Errorf("unable to find snap %s", sn)
 						testLog.Error(err, sn)
 						suite.addError(err)

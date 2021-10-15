@@ -3,21 +3,22 @@ package controllers
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/dell/dell-csi-volumegroup-snapshotter/api/v1alpha2"
-	pkg_common "github.com/dell/dell-csi-volumegroup-snapshotter/pkg/common"
-	connection "github.com/dell/dell-csi-volumegroup-snapshotter/pkg/connection"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/pkg/csiclient"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/test/mock-server/server"
-	"github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/common"
-	fake_client "github.com/dell/dell-csi-volumegroup-snapshotter/test/shared/fake-client"
+	"github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	pkg_common "github.com/dell/csi-volumegroup-snapshotter/pkg/common"
+	connection "github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
+	"github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
+	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/server"
+	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
+	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
+	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	core_v1 "k8s.io/api/core/v1"
@@ -25,11 +26,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
@@ -80,7 +81,8 @@ func (suite *VGSControllerTestSuite) Init() {
 
 	suite.mockUtils = &fake_client.MockUtils{
 		FakeClient: c,
-		Specs:      common.Common{Namespace: "fake-ns"},
+		// FakeClient: fake_controller.NewClientBuilder().Build(),
+		Specs: common.Common{Namespace: "fake-ns"},
 	}
 }
 
@@ -223,12 +225,91 @@ func (suite *VGSControllerTestSuite) TestProvidingLabelAndList() {
 	suite.runFakeVGManager(vgName, suite.mockUtils.Specs.Namespace, "PvcLabel and PvcList can't be provided at the same time.")
 }
 
-// test a successful reconcile with setup
-func (suite *VGSControllerTestSuite) TestSetupManager() {
-	suite.makeFakeVG(ctx, label, vgName, suite.mockUtils.Specs.Namespace, "Retain", nil)
+// test handleSnapContentDelete function with creating two volumes then delete both.
+// Then verify that the object is deleted since all managing snapshots are deleted
+func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
+	vgReconcile, req := suite.createReconcilerAndReq(vgName)
+
+	// start content watcher
+	clientset := sfakeclient.NewSimpleClientset()
+
+	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Second))
+	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
+
+	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		DeleteFunc: vgReconcile.HandleSnapContentDelete,
+		AddFunc: func(obj interface{}) {
+			panic("error")
+		},
+	})
+
+	stop := make(chan struct{})
+	sharedInformerFactory.Start(stop)
+	// done watch
+
+	ns := suite.mockUtils.Specs.Namespace
+
+	suite.makeFakeVG(ctx, label, vgName, ns, "Retain", nil)
 	suite.makeFakeVSC(ctx)
 	suite.makeFakePV(ctx, fakePvName1, srcVolID)
-	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
+	suite.makeFakePVC(ctx, label, fakePvcName1, ns, fakePvName1)
+
+	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
+	res, _ := vgReconcile.Reconcile(context.Background(), req)
+
+	fmt.Printf("reconcile response res=%#v\n", res)
+
+	// get the returned new VG
+	newVg := new(v1alpha2.DellCsiVolumeGroupSnapshot)
+
+	err := suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+		Namespace: ns,
+		Name:      vgName,
+	}, newVg)
+	assert.Equal(suite.T(), err, nil)
+
+	// delete the two snapshots managed by VGS
+	for _, snapshotName := range strings.Split(newVg.Status.Snapshots, ",") {
+
+		fmt.Printf("snapshot name found is %s", snapshotName)
+
+		snapshot := new(s1.VolumeSnapshot)
+
+		err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+			Namespace: ns,
+			Name:      snapshotName,
+		}, snapshot)
+		assert.Equal(suite.T(), err, nil)
+
+		contentName := *snapshot.Spec.Source.VolumeSnapshotContentName
+		content := new(s1.VolumeSnapshotContent)
+
+		err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+			Name: contentName,
+		}, content)
+		assert.Equal(suite.T(), err, nil)
+
+		vgReconcile.HandleSnapContentDelete(content)
+	}
+
+	newVg = new(v1alpha2.DellCsiVolumeGroupSnapshot)
+
+	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
+		Namespace: ns,
+		Name:      vgName,
+	}, newVg)
+	assert.Equal(suite.T(), "DellCsiVolumeGroupSnapshot.volumegroup.storage.dell.com \"vg-snap\" not found", err.Error())
+
+}
+
+// test a successful reconcile with setup
+func (suite *VGSControllerTestSuite) TestSetupManager() {
+	ns := suite.mockUtils.Specs.Namespace
+
+	suite.makeFakeVG(ctx, label, vgName, ns, "Retain", nil)
+	suite.makeFakeVSC(ctx)
+	suite.makeFakePV(ctx, fakePvName1, srcVolID)
+	suite.makeFakePVC(ctx, label, fakePvcName1, ns, fakePvName1)
 	suite.runFakeVGManagerSetup(vgName, "")
 }
 
@@ -392,7 +473,7 @@ func (suite *VGSControllerTestSuite) TestReconcileBadRef() {
 	suite.makeFakeVSC(ctx)
 	suite.makeFakePV(ctx, fakePvName1, srcVolID)
 	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
-	suite.runGetReference(vgName, suite.mockUtils.FakeClient.Objects[key], "no kind is registered for the type")
+	suite.runGetReference(suite.mockUtils.FakeClient.Objects[key], "no kind is registered for the type")
 
 }
 
@@ -404,19 +485,19 @@ func (suite *VGSControllerTestSuite) TestGetRefToRef() {
 		Kind: "VolumeSnapshotClass",
 	}
 
-	ref := suite.runGetReference(vgName, suite.mockUtils.FakeClient.Objects[key], "")
-	suite.runGetReference(vgName, ref, "")
+	ref := suite.runGetReference(suite.mockUtils.FakeClient.Objects[key], "")
+	suite.runGetReference(ref, "")
 
 }
 
 func (suite *VGSControllerTestSuite) TestGetRefToUnknownObj() {
 	unknown := runtime.Unknown{}
-	suite.runGetReference(vgName, &unknown, "object does not implement the common interface for accessing the SelfLink")
+	suite.runGetReference(&unknown, "object does not implement the common interface for accessing the SelfLink")
 }
 
 // Test GetReference with nil obj
 func (suite *VGSControllerTestSuite) TestGetRefWithNilObj() {
-	suite.runGetReference(vgName, nil, "VG Snapshotter vg created ok but nil reference oject for VolumeSnapshot")
+	suite.runGetReference(nil, "VG Snapshotter vg created ok but nil reference oject for VolumeSnapshot")
 }
 
 // ===================== All helper methods =====================
@@ -446,7 +527,7 @@ func (suite *VGSControllerTestSuite) makeFakePVCNotBound(ctx context.Context, lb
 
 func (suite *VGSControllerTestSuite) makeFakePVC(ctx context.Context, lbl, name, namespace, volumeName string) {
 	lbls := labels.Set{
-		"name": lbl,
+		"volume-group": lbl,
 	}
 	ns := namespace
 	pvcObj := common.MakePVC(name, ns, scName, volumeName, lbls)
@@ -489,7 +570,8 @@ func (suite *VGSControllerTestSuite) deleteFakeVG(ctx context.Context, localVgNa
 	suite.mockUtils.FakeClient.Delete(ctx, vg)
 }
 
-func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expectedErr string) {
+// creates a reconciler and reconcile request for unit test
+func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) (vgReconcile *DellCsiVolumeGroupSnapshotReconciler, req reconcile.Request) {
 	csiConn, err := connection.Connect(port)
 	if err != nil {
 		fmt.Printf("failed to connect to CSI driver, err: %#v", err)
@@ -499,14 +581,13 @@ func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expected
 	opts := zap.Options{
 		Development: true,
 	}
-	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	fakeRecorder := record.NewFakeRecorder(100)
 	// make a Reconciler object with grpc client
 	// notice Client is set to fake client: the k8s mock
-	vgReconcile := &DellCsiVolumeGroupSnapshotReconciler{
+	vgReconcile = &DellCsiVolumeGroupSnapshotReconciler{
 		Client:        suite.mockUtils.FakeClient,
 		Log:           ctrl.Log.WithName("controllers").WithName("unit-test"),
 		EventRecorder: fakeRecorder,
@@ -518,12 +599,18 @@ func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expected
 	// make a request object to pass to Reconcile method in controller
 	// this does not contain any k8s object , using the name passed in
 	// Reconcile can select object from fake-client in memory objects
-	req := reconcile.Request{
+	req = reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Namespace: suite.mockUtils.Specs.Namespace,
 			Name:      localVgName,
 		},
 	}
+
+	return
+}
+
+func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expectedErr string) {
+	vgReconcile, req := suite.createReconcilerAndReq(vgName)
 
 	mgr, _ := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             runtime.NewScheme(),
@@ -611,40 +698,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 }
 
 func (suite *VGSControllerTestSuite) runFakeVGManager(localVgName, namespace, expectedErr string) {
-	csiConn, err := connection.Connect(port)
-	if err != nil {
-		fmt.Printf("failed to connect to CSI driver, err: %#v", err)
-		os.Exit(1)
-	}
-
-	opts := zap.Options{
-		Development: true,
-	}
-	flag.Parse()
-
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
-	fakeRecorder := record.NewFakeRecorder(100)
-	// make a Reconciler object with grpc client
-	// notice Client is set to fake client: the k8s mock
-	vgReconcile := &DellCsiVolumeGroupSnapshotReconciler{
-		Client:        suite.mockUtils.FakeClient,
-		Log:           ctrl.Log.WithName("controllers").WithName("unit-test"),
-		EventRecorder: fakeRecorder,
-		Scheme:        common.Scheme,
-		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
-		DriverName:    common.DriverName,
-	}
-
-	// make a request object to pass to Reconcile method in controller
-	// this does not contain any k8s object , using the name passed in
-	// Reconcile can select object from fake-client in memory objects
-	req := reconcile.Request{
-		NamespacedName: types.NamespacedName{
-			Namespace: namespace,
-			Name:      localVgName,
-		},
-	}
+	vgReconcile, req := suite.createReconcilerAndReq(localVgName)
 
 	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
 	res, err := vgReconcile.Reconcile(context.Background(), req)
@@ -664,21 +718,8 @@ func (suite *VGSControllerTestSuite) runFakeVGManager(localVgName, namespace, ex
 	}
 }
 
-func (suite *VGSControllerTestSuite) runGetReference(localVgName string, obj runtime.Object, expectedErr string) *core_v1.ObjectReference {
-	csiConn, err := connection.Connect(port)
-	if err != nil {
-		fmt.Printf("failed to connect to CSI driver, err: %#v", err)
-		os.Exit(1)
-	}
-
-	// make a Reconciler object with grpc client
-	// notice Client is set to fake client: the k8s mock
-	vgReconcile := &DellCsiVolumeGroupSnapshotReconciler{
-		Client:   suite.mockUtils.FakeClient,
-		Log:      logf.Log.WithName("vg-controller"),
-		Scheme:   common.Scheme,
-		VGClient: csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
-	}
+func (suite *VGSControllerTestSuite) runGetReference(obj runtime.Object, expectedErr string) *core_v1.ObjectReference {
+	vgReconcile, _ := suite.createReconcilerAndReq(vgName)
 
 	ref, err := vgReconcile.GetReference(vgReconcile.Scheme, obj)
 
