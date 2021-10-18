@@ -23,7 +23,7 @@ It uses the `dell-csi-extensions` API, implemented by Dell EMC CSI drivers, to m
 
 For documentation, please visit [Container Storage Modules documentation](https://dell.github.io/csm-docs/).
 
-CSI Volume Group Snapshotter is currently in a Technical Preview Phase, and should be considered pre-release software. We are actively seeking feedback from users about its features. Please provide feedback using . We will take that input, along with our own results from doing extensive testing, and incrementally improve the software. We do not recommend or support it for production use at this time.
+CSI Volume Group Snapshotter is currently in a Technical Preview Phase, and should be considered pre-release software. We are actively seeking feedback from users about its features. Please provide feedback using . We will take that input, along with results from our own extensive testing, and incrementally improve the software. We do not recommend or support it for production use at this time.
 
 ## Supported CSI Drivers
 Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots for PowerFlex array. 
@@ -41,21 +41,38 @@ This project relies on the following tools which have to be installed in order t
 
 To install the external-snapshotter, please see the [GitHub repository](https://github.com/kubernetes-csi/external-snapshotter/tree/v4.1.1). If you have already installed the correct version of the external-snapshotter with the CSI driver, you don't need to do it again.
 
-
 ### Binaries
 
 To build an image for docker, run `make docker-build`
 To build an image for podman, run `make podman-build`
 
 ## Installation
-To install and use the Volume Group Snapshotter, you need to install the CRD in your cluster and also deploy it with the driver.
+To install and use the Volume Group Snapshotter, you need to install pre-requisites in your cluster, then install the CRD in your cluster and deploy it with the driver.
 
-### Custom Resource Definitions
+### 1. Install Pre-Requisites
+The only pre-requisite required is the external-snapshotter, which is available [here](https://github.com/kubernetes-csi/external-snapshotter/tree/v4.1.1). Version 4.1+ is required. This is also required for the driver, so if the driver has already been installed, this pre-requisite should already be fulfilled as well.
 
-Run the command `make install` to install the Custom Resource Definitions in your Kubernetes cluster.
-Configure all the helm chart parameters described below before deploying the drivers.
+The external-snapshotter is split into two controllers, the common snapshot controller and a CSI external-snapshotter sidecar. The common snapshot controller must be installed only once per cluster.
 
-### Deploy VGS in Driver with Helm Chart Parameters
+Here are sample instructions on installing the external-snapshotter CRDs:
+```
+git clone https://github.com/kubernetes-csi/external-snapshotter/
+cd ./external-snapshotter
+git checkout release-<your-version>
+kubectl create -f client/config/crd
+kubectl create -f deploy/kubernetes/snapshot-controller
+```
+
+### 2. Install VGS CRD
+
+If you don't want to use Kustomize to modify/add any parameters, you can just install the VGS with the following command (run in top-level folder):
+```
+kubectl apply -f config/crd/vgs-install.yaml
+```
+
+If you want to make use of Kustomize, then the command `make install` can be used to install the Custom Resource Definitions in your Kubernetes cluster.
+
+### 3. Deploy VGS in CSI Driver with Helm Chart Parameters
 
 The drivers that support Helm chart deployment allow the CSM Volume Group Snapshotter to be _optionally_ deployed 
 by variables in the chart. There is a _vgsnapshotter_ block specified in the _values.yaml_ file of the chart that will look similar the text below by default:
@@ -70,8 +87,8 @@ vgsnapshotter:
 ```
 To deploy CSM Volume Group Snapshotter with the driver, the following changes are required:
 1. Enable CSM Volume Group Snapshotter by changing the vgsnapshotter.enabled boolean to true. 
-2. In the image field, put the location of the image you created in the above steps, or link to one already built.
-3. Install driver with `csi_install.sh` script
+2. In the vgsnapshotter.image field, put the location of the image you created following the steps in the build section, or link to one already built.
+3. Install/upgrade the driver normally. You should now have VGS successfully deployed with the driver!
 
 ## Volume Group Snapshot CRD Create
 In Kubernetes, volume group snapshot objects are represented as instances of VolumeGroupSnapshot CRD.
@@ -171,5 +188,3 @@ To get the logs from VGS, do `kubectl logs POD-NAME vg-snapshotter`
 | `kubectl describe vgs VGS-NAME` shows its Status.Status is `error` | Driver fails to create VG on array |
 | `kubectl describe vgs VGS-NAME` shows its Status.Status is `incomplete` | VG is created ok on array, controller fails to create snapshot/snapshotcontent |
 | Snapshot deletion fails with `VG Snapshotter status is incomplete` | Ensure you use the latest CRDs available in config/crd/bases/ | 
-
-
