@@ -7,7 +7,6 @@ You may obtain a copy of the License at
 -->
 
 # Dell Container Storage Modules (CSM) Volume Group Snapshotter
-
 [![License](https://img.shields.io/github/license/dell/csi-volumegroup-snapshotter?style=flat-square&color=blue&label=License)](https://github.com/dell/csi-volumegroup-snapshotter/blob/master/LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/dellemc/csi-volumegroup-snapshotter)](https://hub.docker.com/repository/docker/dellemc/csi-volumegroup-snapshotter)
 [![Go version](https://img.shields.io/github/go-mod/go-version/dell/csi-volumegroup-snapshotter)](go.mod)
@@ -42,7 +41,6 @@ This project relies on the following tools which have to be installed in order t
 To install the external-snapshotter, please see the [GitHub repository](https://github.com/kubernetes-csi/external-snapshotter/tree/v4.1.1). If you have already installed the correct version of the external-snapshotter with the CSI driver, you don't need to do it again.
 
 ### Binaries
-
 To build an image for docker, run `make docker-build`
 To build an image for podman, run `make podman-build`
 
@@ -64,16 +62,14 @@ kubectl create -f deploy/kubernetes/snapshot-controller
 ```
 
 ### 2. Install VGS CRD
-
-If you don't want to use Kustomize to modify/add any parameters, you can just install the VGS with the following command (run in top-level folder):
+If you want to install the VGS CRD from a pre-generated yaml, you can do so with the following command (run in top-level folder):
 ```
 kubectl apply -f config/crd/vgs-install.yaml
 ```
 
-If you want to make use of Kustomize, then the command `make install` can be used to install the Custom Resource Definitions in your Kubernetes cluster.
+If you want to create your own CRD for installation with Kustomize, then the command `make install` can be used to create and install the Custom Resource Definitions in your Kubernetes cluster.
 
 ### 3. Deploy VGS in CSI Driver with Helm Chart Parameters
-
 The drivers that support Helm chart deployment allow the CSM Volume Group Snapshotter to be _optionally_ deployed 
 by variables in the chart. There is a _vgsnapshotter_ block specified in the _values.yaml_ file of the chart that will look similar the text below by default:
 
