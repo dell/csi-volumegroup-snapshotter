@@ -38,8 +38,8 @@ import (
 var (
 	scName         = "fake-sc"
 	label          = "vg-snap-label"
-	systemId       = "4d4a2e5a36080e0f"
-	srcVolID       = systemId + "-12345"
+	systemID       = "4d4a2e5a36080e0f"
+	srcVolID       = systemID + "-12345"
 	wrongSrcVolID  = "123-123"
 	vgName         = "vg-snap"
 	vgNameTestErr  = "vg-snap-error"

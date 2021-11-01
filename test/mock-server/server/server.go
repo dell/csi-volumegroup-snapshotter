@@ -15,23 +15,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-// mock VolumeGroupSnapshotServer
+//MockVolumeGroupSnapshotServer mock VolumeGroupSnapshotServer
 type MockVolumeGroupSnapshotServer struct{}
 
+//MockServer grpc server handle
 var MockServer *grpc.Server
 
+//ProbeController grpc call to get driver information
 func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csi_ext.ProbeControllerRequest) (*csi_ext.ProbeControllerResponse, error) {
 	out := &csi_ext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
 
+//CreateVolumeGroupSnapshot creete vgs
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
 	return out, err
 }
 
+//DeleteVolumeGroupSnapshot delete vgs
 func (vgs *MockVolumeGroupSnapshotServer) DeleteVolumeGroupSnapshot(ctx context.Context, in *csi_ext.DeleteVolumeGroupSnapshotRequest) (*csi_ext.DeleteVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.DeleteVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "DeleteVolumeGroupSnapshot", in, out)
@@ -49,7 +53,7 @@ type response struct {
 	Error string      `json:"error"`
 }
 
-// FindStub post find request and returns the unmarshalled response
+//FindStub post find request and returns the unmarshalled response
 func FindStub(service, method string, in, out interface{}) error {
 	url := "http://localhost:4771/find"
 	pyl := payload{
@@ -87,7 +91,7 @@ func FindStub(service, method string, in, out interface{}) error {
 	return json.Unmarshal(data, out)
 }
 
-// starts a mock server
+//RunServer starts a mock server
 func RunServer(stubsPath string) {
 	fmt.Print("RUNNING MOCK SERVER")
 	const (
@@ -136,7 +140,7 @@ func RunServer(stubsPath string) {
 	}()
 }
 
-// stop mock server gracefully
+//StopMockServer stop mock server gracefully
 func StopMockServer() {
 	MockServer.GracefulStop()
 	fmt.Printf("Server stopped gracefully")
