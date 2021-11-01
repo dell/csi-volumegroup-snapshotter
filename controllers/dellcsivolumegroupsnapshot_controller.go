@@ -156,16 +156,16 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 
 	// get source volume ids
 	ns := vg.Namespace
-	var srcVolIds []string
-	var volIdPvcNameMap map[string]string
+	var srcVolIDs []string
+	var volIDPvcNameMap map[string]string
 	var volErr error
 	if vg.Spec.PvcList != nil {
-		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromPvcName(ctx, vg.Spec.PvcList, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromPvcName(ctx, vg.Spec.PvcList, ns)
 	} else if vg.Spec.PvcLabel != "" {
-		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromLabel(ctx, vg.Spec.PvcLabel, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromLabel(ctx, vg.Spec.PvcLabel, ns)
 	} else {
 		// snapshot pvcs under given namespace
-		srcVolIds, volIdPvcNameMap, volErr = r.getSourceVolIdsFromNs(ctx, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromNs(ctx, ns)
 	}
 
 	if volErr != nil {
@@ -182,12 +182,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 
 	// set VG name in status if array supports it
 
-	sort.Strings(srcVolIds)
+	sort.Strings(srcVolIDs)
 	// make grpc call to driver
 	otherParams := make(map[string]string)
 	otherParams[common.ExistingGroupID] = vg.Status.SnapshotGroupID
 	log.Info("VG Snapshotter vg create", "existing GroupID", otherParams[common.ExistingGroupID])
-	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIds, otherParams)
+	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIDs, otherParams)
 	if grpcErr != nil {
 		vg.Status.Status = common.EventStatusError
 		if err := r.Status().Update(ctx, vg); err != nil {
@@ -220,7 +220,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	}
 
 	// process create VG response
-	if _, perr := r.processResponse(ctx, res, volIdPvcNameMap, vg, sc, groupName); perr != nil {
+	if _, perr := r.processResponse(ctx, res, volIDPvcNameMap, vg, sc, groupName); perr != nil {
 		vg.Status.Status = common.EventStatusIncomplete
 		vg.Status.SnapshotGroupID = res.SnapshotGroupID
 		if err := r.Status().Update(ctx, vg); err != nil {
@@ -252,7 +252,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) driverVerification(sc *s1.VolumeS
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Context,
 	res *csiext.CreateVolumeGroupSnapshotResponse,
-	volIdPvcNameMap map[string]string,
+	volIDPvcNameMap map[string]string,
 	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
 	sc *s1.VolumeSnapshotClass,
 	groupName string) (ctrl.Result, error) {
@@ -274,7 +274,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 		log.Info("VG Snapshotter snap info", "snap-name ", s.Name)
 
 		// make a VolumeSnapshot
-		pvcName := volIdPvcNameMap[s.SourceId]
+		pvcName := volIDPvcNameMap[s.SourceId]
 		// var volumeSnapshotName string
 		if s.Name != "" {
 			volumeSnapshotName = s.Name + "-" + pvcName
@@ -714,7 +714,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromLabel(ctx cont
 		return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, pvc with label missing")
 	}
 
-	return r.mapVolIdToPvcName(ctx, pvcList.Items)
+	return r.mapVolIDToPvcName(ctx, pvcList.Items)
 }
 
 // get a list of source volume Ids, a map from these Ids to corresponding pvc names based on a list of pvc names
@@ -745,7 +745,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromPvcName(ctx co
 		pvcList = append(pvcList, *pvc)
 	}
 
-	return r.mapVolIdToPvcName(ctx, pvcList)
+	return r.mapVolIDToPvcName(ctx, pvcList)
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromNs(ctx context.Context, ns string) ([]string, map[string]string, error) {
@@ -760,15 +760,15 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromNs(ctx context
 		return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, no pvc found under ns %s", ns)
 	}
 
-	return r.mapVolIdToPvcName(ctx, pvcList.Items)
+	return r.mapVolIDToPvcName(ctx, pvcList.Items)
 }
 
 // helper function for getSourceVolIds.
 // takes a list of PVCs and return a list of source volume Ids, a map from these Ids to corresponding pvc names
-func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIdToPvcName(ctx context.Context, pvcs []v1.PersistentVolumeClaim) ([]string, map[string]string, error) {
-	srcVolIds := make([]string, 0)
-	volIdPvcNameMap := make(map[string]string)
-	var systemId string
+func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Context, pvcs []v1.PersistentVolumeClaim) ([]string, map[string]string, error) {
+	srcVolIDs := make([]string, 0)
+	volIDPvcNameMap := make(map[string]string)
+	var systemID string
 	for k, pvc := range pvcs {
 		pvName := pvc.Spec.VolumeName
 		log.Info("VG Snapshotter found pvc", "name", pvName)
@@ -782,38 +782,38 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIdToPvcName(ctx context.Con
 			log.Error(err, "VG Snapshotter vg create failed, unable to find pv for pvc")
 			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, unable to find pv for %s", pvName)
 		}
-		srcVolId := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
+		srcVolID := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
 
 		// check pvc and pv status
 		if pvc.Status.Phase != v1.ClaimBound || pv.Status.Phase != v1.VolumeBound {
-			statusErr := fmt.Errorf("pvc/pv %s does not have expected status phase : %s", srcVolId, pvc.Status.Phase)
+			statusErr := fmt.Errorf("pvc/pv %s does not have expected status phase : %s", srcVolID, pvc.Status.Phase)
 			log.Error(statusErr, "VG Snapshotter pv for pvc has unexpected state")
 			// skip this pvc with matching label
 			continue
 		}
 
 		if k == 0 {
-			systemId = strings.Split(srcVolId, "-")[0]
-			log.Info("VG Snapshotter found systemId", "systemId", systemId)
+			systemID = strings.Split(srcVolID, "-")[0]
+			log.Info("VG Snapshotter found systemID", "systemID", systemID)
 		}
-		currentSystemId := strings.Split(srcVolId, "-")[0]
-		if systemId == currentSystemId {
-			srcVolIds = append(srcVolIds, srcVolId)
+		currentsystemID := strings.Split(srcVolID, "-")[0]
+		if systemID == currentsystemID {
+			srcVolIDs = append(srcVolIDs, srcVolID)
 		} else {
-			log.Info("VG Snapshotter systemIds are different", "first system Id:", systemId, "current system Id:", currentSystemId)
-			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, VG Snapshotter systemIDs are different %s", systemId)
+			log.Info("VG Snapshotter systemIDs are different", "first system Id:", systemID, "current system Id:", currentsystemID)
+			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, VG Snapshotter systemIDs are different %s", systemID)
 		}
 
 		log.Info("VG Snapshotter found pvc ", "name", pvc.Name)
-		log.Info("VG Snapshotter found pv ", "volumeId", srcVolId)
-		volIdPvcNameMap[srcVolId] = pvc.Name
+		log.Info("VG Snapshotter found pv ", "volumeId", srcVolID)
+		volIDPvcNameMap[srcVolID] = pvc.Name
 	}
 
-	if len(srcVolIds) < 1 || len(volIdPvcNameMap) < 1 {
+	if len(srcVolIDs) < 1 || len(volIDPvcNameMap) < 1 {
 		return nil, nil, fmt.Errorf("VG Snapshotter matching pvc label with pv failed to find source volume ids")
 	}
 
-	return srcVolIds, volIdPvcNameMap, nil
+	return srcVolIDs, volIDPvcNameMap, nil
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) makeVolSnap(ns string, vgname string, name string, snapClassName string, content string) *s1.VolumeSnapshot {
@@ -966,6 +966,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 	return nil
 }
 
+//HandleSnapContentDelete updates VG status based on changes to volumesnapshotcontent
 func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj interface{}) {
 
 	content, ok := obj.(*s1.VolumeSnapshotContent)
