@@ -13,17 +13,23 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
+//Driver name
 type Driver struct {
 	DriverName string
 }
 
+//DriverName default
 var DriverName = "csi-vxflexos"
+
+//Scheme runtime type
 var Scheme = runtime.NewScheme()
 
+//Common namespace
 type Common struct {
 	Namespace string
 }
 
+//InitializeSchemes init scheme
 func InitializeSchemes() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(storagev1alpha2.AddToScheme(Scheme))
@@ -32,8 +38,8 @@ func InitializeSchemes() {
 
 // move utility functions from test code to here
 
-// create a PV object
-func MakePV(name, driverName, srcVolId, scName string, volumeAttributes map[string]string) core_v1.PersistentVolume {
+//MakePV create a PV object
+func MakePV(name, driverName, srcVolID, scName string, volumeAttributes map[string]string) core_v1.PersistentVolume {
 	pvObj := core_v1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -42,7 +48,7 @@ func MakePV(name, driverName, srcVolId, scName string, volumeAttributes map[stri
 			PersistentVolumeSource: core_v1.PersistentVolumeSource{
 				CSI: &core_v1.CSIPersistentVolumeSource{
 					Driver:           driverName,
-					VolumeHandle:     srcVolId,
+					VolumeHandle:     srcVolID,
 					VolumeAttributes: volumeAttributes,
 				},
 			},
@@ -54,7 +60,7 @@ func MakePV(name, driverName, srcVolId, scName string, volumeAttributes map[stri
 	return pvObj
 }
 
-// create a PVC object
+//MakePVC create a PVC object
 func MakePVC(name, ns, scName, volumeName string, lbl labels.Set) core_v1.PersistentVolumeClaim {
 	pvcObj := core_v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
@@ -82,7 +88,7 @@ func MakePVC(name, ns, scName, volumeName string, lbl labels.Set) core_v1.Persis
 	return pvcObj
 }
 
-// create a Volumesnapshot Class object
+//MakeVSC create a Volumesnapshot Class object
 func MakeVSC(name, driver string) s1.VolumeSnapshotClass {
 	vsc := s1.VolumeSnapshotClass{
 		ObjectMeta: metav1.ObjectMeta{
@@ -95,7 +101,7 @@ func MakeVSC(name, driver string) s1.VolumeSnapshotClass {
 	return vsc
 }
 
-// create a volume group snapshotter object
+//MakeVG create a volume group snapshotter object
 func MakeVG(name, ns, driver, pvcLabel, vsc string, reclaimPolicy v1alpha2.MemberReclaimPolicy, pvcList []string) v1alpha2.DellCsiVolumeGroupSnapshot {
 	volumeGroup := v1alpha2.DellCsiVolumeGroupSnapshot{
 		ObjectMeta: metav1.ObjectMeta{

@@ -40,10 +40,13 @@ type Output struct {
 }
 
 const (
+	//DefaultAddress for test
 	DefaultAddress = "localhost"
-	DefaultPort    = "4771"
+	//DefaultPort for test
+	DefaultPort = "4771"
 )
 
+//RunStubServer test server
 func RunStubServer(opt Options) {
 	if opt.Port == "" {
 		opt.Port = DefaultPort
