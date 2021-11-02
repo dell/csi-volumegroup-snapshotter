@@ -4,7 +4,7 @@ module github.com/dell/csi-volumegroup-snapshotter/test/integration-test
 
 replace github.com/dell/csi-volumegroup-snapshotter => ../../
 
-//replace github.com/dell/vxflexos/v2 => ./csi-powerflex
+//replace github.com/dell/vxflexos => ./csi-powerflex
 
 // replace github.com/dell/goscaleio => ./csi-vxflexos/goscaleio
 
@@ -14,7 +14,7 @@ require (
 	github.com/container-storage-interface/spec v1.5.0
 	github.com/cucumber/godog v0.12.1
 	github.com/dell/csi-volumegroup-snapshotter v0.3.0
-	github.com/dell/csi-vxflexos/v2 v2.0.0
+	github.com/dell/csi-vxflexos v1.6.0
 	github.com/dell/gocsi v1.4.0
 	github.com/dell/goscaleio v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2

@@ -35,6 +35,7 @@ func New(conn *grpc.ClientConn, log logr.Logger, timeout time.Duration) *VolumeG
 	}
 }
 
+//CreateVolumeGroupSnapshot grpc call to driver
 func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, volIds []string,
 	params map[string]string) (*csiext.CreateVolumeGroupSnapshotResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
@@ -51,6 +52,7 @@ func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, vol
 	return client.CreateVolumeGroupSnapshot(ctx, req)
 }
 
+//ProbeController grpc call to driver
 func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 	v.log.V(1).Info("Probing controller")
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
@@ -66,6 +68,7 @@ func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 	return driverName, nil
 }
 
+//ProbeDriver wrapper for grpc call
 func (v *VolumeGroupSnapshotClient) ProbeDriver() (string, error) {
 	for {
 		v.log.V(2).Info("Probing driver for readiness")
