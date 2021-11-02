@@ -1,4 +1,4 @@
-package integrationtestvg
+package testvg
 
 import (
 	"context"
@@ -17,9 +17,10 @@ import (
 	csiclient "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
-	core_v1 "k8s.io/api/core/v1"
 
+	//"github.com/dell/csi-vxflexos/service"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	core_v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -261,7 +262,7 @@ func (suite *FakeVGTestSuite) CleanupVolsOnArray() error {
 func (suite *FakeVGTestSuite) iCallDeleteVolume(srcID string) error {
 	ctx := context.Background()
 	delVolReq := new(csi.DeleteVolumeRequest)
-	delVolReq.VolumeID = srcID
+	delVolReq.VolumeId = srcID
 	_, err := driverClient.DeleteVolume(ctx, delVolReq)
 
 	if err != nil {
@@ -287,8 +288,8 @@ func (suite *FakeVGTestSuite) iCallCreateVolumes(count int, vname string, size i
 			suite.addError(err)
 		} else {
 			testLog.Info("CreateVolume", volResp.GetVolume().VolumeContext["Name"],
-				volResp.GetVolume().VolumeID)
-			suite.volID = volResp.GetVolume().VolumeID
+				volResp.GetVolume().VolumeId)
+			suite.volID = volResp.GetVolume().VolumeId
 			suite.srcVolIDs = append(suite.srcVolIDs, suite.volID)
 		}
 	}
@@ -471,7 +472,7 @@ func (suite *FakeVGTestSuite) aVgsController() error {
 }
 
 func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() error {
-	suite.makeFakeVSC()
+	_ = suite.makeFakeVSC()
 
 	for _, srcID := range suite.srcVolIDs {
 		// pre-req pv must  exist
@@ -480,7 +481,7 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 		_ = suite.makeFakePVC(srcID)
 	}
 
-	suite.makeFakeVG()
+	_ = suite.makeFakeVG()
 
 	vgReconcile, req := suite.makeReconciler()
 
@@ -595,9 +596,11 @@ func (suite *FakeVGTestSuite) iCallTestDeleteVG() error {
 
 	testLog.Info("vg got from icalltestdeleteVG is", "vg", vg)
 
-	suite.mockUtils.FakeClient.SetDeletionTimeStamp(ctx, vg)
-	suite.mockUtils.FakeClient.Delete(ctx, vg)
-
+	derr := suite.mockUtils.FakeClient.SetDeletionTimeStamp(ctx, vg)
+	derr = suite.mockUtils.FakeClient.Delete(ctx, vg)
+	if derr != nil {
+		testLog.Error(derr, "vg fake delete failed", "name", vgname, "ns", ns)
+	}
 	if err := suite.runVGReconcile(); err != nil {
 		suite.addError(err)
 	}
@@ -1000,7 +1003,7 @@ func (suite *FakeVGTestSuite) removeExistingObject(objName string, newNS string,
 func (suite *FakeVGTestSuite) iCallDeleteSnapshot(snapID string) error {
 	ctx := context.Background()
 	req := &csi.DeleteSnapshotRequest{
-		SnapshotID: snapID,
+		SnapshotId: snapID,
 	}
 	// call csi driver using grpc client
 	_, err := driverClient.DeleteSnapshot(ctx, req)
@@ -1008,7 +1011,7 @@ func (suite *FakeVGTestSuite) iCallDeleteSnapshot(snapID string) error {
 		testLog.Error(err, "test DeleteSnapshot returned error")
 		return err
 	}
-	testLog.Info("test cleanup DeleteSnapshot ok", "snap", req.SnapshotID)
+	testLog.Info("test cleanup DeleteSnapshot ok", "snap", req.SnapshotId)
 	return nil
 }
 
@@ -1017,7 +1020,7 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	var err error
 	ctx := context.Background()
 	// SnapshotID: idToQuery
-	req := &csi.ListSnapshotsRequest{SourceVolumeID: srcID}
+	req := &csi.ListSnapshotsRequest{SourceVolumeId: srcID}
 
 	// call csi-driver to query powerflex array
 	snaps, err := driverClient.ListSnapshots(ctx, req)
@@ -1027,9 +1030,9 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	entries := snaps.GetEntries()
 	for j := 0; j < len(entries); j++ {
 		entry := entries[j]
-		id := entry.GetSnapshot().SnapshotID
+		id := entry.GetSnapshot().SnapshotId
 		ts := ptypes.TimestampString(entry.GetSnapshot().CreationTime)
-		foundsrcID := entry.GetSnapshot().SourceVolumeID
+		foundsrcID := entry.GetSnapshot().SourceVolumeId
 		testLog.V(1).Info("look for volume ", srcID, foundsrcID)
 		if id != "" && foundsrcID != "" && strings.Contains(srcID, foundsrcID) {
 			testLog.Info("test found snapshot in powerflex ", "id:", id, "source ID", foundsrcID, "time", ts)

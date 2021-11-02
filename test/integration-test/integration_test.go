@@ -1,4 +1,4 @@
-package integrationtestvg
+package testvg
 
 import (
 	"bufio"
@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	datafile   = "/tmp/datafile"
-	datadir    = "/tmp/datadir"
-	configFile = "./config.json"
+	datafile   string = "/tmp/datafile"
+	datadir    string = "/tmp/datadir"
+	configFile string = "./config.json"
 )
 
 var grpcClient *grpc.ClientConn

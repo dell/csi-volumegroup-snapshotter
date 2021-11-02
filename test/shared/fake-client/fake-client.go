@@ -281,10 +281,12 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 	if o, ok := obj.(*snapv1.VolumeSnapshot); ok {
 		contentname := o.Spec.Source.VolumeSnapshotContentName
 		vc := &snapv1.VolumeSnapshotContent{}
-		f.Get(ctx, client.ObjectKey{
+		err := f.Get(ctx, client.ObjectKey{
 			Name: *contentname,
 		}, vc)
-
+		if err != nil {
+			return err
+		}
 		if vc.Spec.DeletionPolicy == "Delete" {
 			k2, err := getKey(vc)
 			if err != nil {
