@@ -12,7 +12,7 @@ go 1.16
 
 require (
 	github.com/container-storage-interface/spec v1.5.0
-	github.com/cucumber/godog v0.12.1
+	github.com/cucumber/godog v0.12.2
 	github.com/dell/csi-volumegroup-snapshotter v0.3.0
 	github.com/dell/csi-vxflexos v1.6.0
 	github.com/dell/gocsi v1.4.0
