@@ -142,6 +142,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dell/csi-vxflexos v1.6.0 h1:aZjxBN11KSUQjgUOym0iZJEoVKMI8uMd7sXIYrZoGaw=
 github.com/dell/csi-vxflexos v1.6.0/go.mod h1:EKrpNnO8f/vwaENROJJ7eQMOnNRfJZzD9fooA8zX/Yc=
+github.com/dell/csi-vxflexos/v2 v2.0.0-20211014194653-b2cf36dab234 h1:4kb/csabQSWfvFdZUSYofE6rzwv0AK+OEvjpX48DJ8Q=
+github.com/dell/csi-vxflexos/v2 v2.0.0-20211014194653-b2cf36dab234/go.mod h1:/MLx1HfSNwzG8XSO3aVk9SDJOvGwmkQtqLSEJULjhxY=
 github.com/dell/dell-csi-extensions/podmon v1.0.0 h1:QoxioaFfjIP6cJ4s166A1JhgxIXWe/H0A60edO6nf4E=
 github.com/dell/dell-csi-extensions/podmon v1.0.0/go.mod h1:Jjt+zHbLIZ3qJMug17WBYdz7wu90+hd65kgJwv8ZOec=
 github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.2.0 h1:wksTZZatf8r4298AuncGMrLNdydFRsNTWcN0ckn8BJo=

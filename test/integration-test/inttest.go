@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/cucumber/godog"
-	"github.com/dell/csi-vxflexos/provider"
-	"github.com/dell/csi-vxflexos/service"
+	"github.com/dell/csi-vxflexos/v2/provider"
+	"github.com/dell/csi-vxflexos/v2/service"
 	"github.com/dell/gocsi/utils"
 	"google.golang.org/grpc"
 )
