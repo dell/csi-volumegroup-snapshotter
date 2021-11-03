@@ -1,4 +1,4 @@
-package integration_testvg
+package testvg
 
 import (
 	"context"
@@ -17,9 +17,9 @@ import (
 	csiclient "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
-	core_v1 "k8s.io/api/core/v1"
 
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	core_v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,22 +39,22 @@ import (
 )
 
 var (
-	ns                = "helmtest-vxflexos"
-	scname            = "fake-sc"
-	setlabel          = "vg-int-snap-label"
-	vgname            = "vg-int-snap"
-	vscname           = "vxflexos-snapclass"
-	PVC_NAME_PREFIX   = "vg-int-pvc"
-	PV_NAME_PREFIX    = "vg-int-pv"
-	reconcile_vgname  string
-	LABEL_ERROR       bool
-	NOPV_ERROR        bool
-	NOVSC_ERROR       bool
-	DRIVER_NAME_ERROR bool
-	CREATE_VC_ERROR   bool
-	CREATE_VS_ERROR   bool
-	UPDATE_VC_ERROR   bool
-	UPDATE_VG_ERROR   bool
+	ns              = "helmtest-vxflexos"
+	scname          = "fake-sc"
+	setlabel        = "vg-int-snap-label"
+	vgname          = "vg-int-snap"
+	vscname         = "vxflexos-snapclass"
+	pvcNamePrefix   = "vg-int-pvc"
+	pvNamePrefix    = "vg-int-pv"
+	reconcileVgname string
+	labelError      bool
+	noPvError       bool
+	noVscError      bool
+	driverNameError bool
+	createVcError   bool
+	createVsError   bool
+	updateVcError   bool
+	updateVgError   bool
 	// driver client to pass to controller
 	csiConn *grpc.ClientConn
 )
@@ -67,6 +67,7 @@ var testLog = logf.Log.WithName("int-test")
 
 var fakeRecorder = record.NewFakeRecorder(100)
 
+//FakeVGTestSuite setup test suite
 type FakeVGTestSuite struct {
 	errs                []error
 	driverName          string
@@ -96,7 +97,7 @@ func (suite *FakeVGTestSuite) thereAreNoErrors() error {
 	return suite.errs[0]
 }
 
-// gherkin steps for feature
+//VGFeatureContext gherkin steps for feature
 func VGFeatureContext(s *godog.ScenarioContext) {
 	suite := &FakeVGTestSuite{}
 	s.Step(`^a Vgs Controller$`, suite.aVgsController)
@@ -125,7 +126,7 @@ func VGFeatureContext(s *godog.ScenarioContext) {
 
 }
 
-// rune once to initialize
+//BeforeTestSuite rune once to initialize
 func (suite *FakeVGTestSuite) BeforeTestSuite() {
 	testLog.Info("Onetime init for Feature...")
 	opts := zap.Options{
@@ -140,7 +141,7 @@ func (suite *FakeVGTestSuite) BeforeTestSuite() {
 	logf.SetLogger(logger)
 }
 
-// new in godog : call before and after all scenarios
+//CleanupTestSuite new in godog : call before and after all scenarios
 func CleanupTestSuite(s *godog.TestSuiteContext) {
 	suite := &FakeVGTestSuite{}
 	s.BeforeSuite(func() {
@@ -151,68 +152,68 @@ func CleanupTestSuite(s *godog.TestSuiteContext) {
 	})
 }
 
-// force error methods
+//iForceUpdateVGError force error methods
 func (suite *FakeVGTestSuite) iForceUpdateVGError(value string) error {
 	testLog.Info("force VG update error")
-	reconcile_vgname = value[:13]
-	UPDATE_VG_ERROR = true
+	reconcileVgname = value[:13]
+	updateVgError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceUpdateVCError(value string) error {
 	testLog.Info("force VS update error")
-	reconcile_vgname = value[:13]
-	UPDATE_VC_ERROR = true
+	reconcileVgname = value[:13]
+	updateVcError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceCreateVSError(value string) error {
 	testLog.Info("force VS create error")
-	reconcile_vgname = value[:13]
-	CREATE_VS_ERROR = true
+	reconcileVgname = value[:13]
+	createVsError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceCreateVCError(value string) error {
 	testLog.Info("force VC create error")
-	reconcile_vgname = value[:13]
-	CREATE_VC_ERROR = true
+	reconcileVgname = value[:13]
+	createVcError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceBadVGError(value string) error {
 	testLog.Info("force bad vg error", "vg name", value)
-	reconcile_vgname = ""
-	DRIVER_NAME_ERROR = true
+	reconcileVgname = ""
+	driverNameError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceDriverError(value string) error {
 	testLog.Info("force driver name error", "name", value)
 	if strings.Contains(value, "no-vg-name") {
-		reconcile_vgname = ""
+		reconcileVgname = ""
 	}
-	DRIVER_NAME_ERROR = true
+	driverNameError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceNoVSCError(value string) error {
 	testLog.Info("force no vsc error", "vsc", value)
 	vgname = value[:13]
-	NOVSC_ERROR = true
+	noVscError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iForceNoPVError(value string) error {
 	testLog.Info("force no pv error", "pv", value)
 	// vgname = value
-	NOPV_ERROR = true
+	noPvError = true
 	return nil
 }
 
 func (suite *FakeVGTestSuite) iSetVGName(value string) error {
 	testLog.Info("set vgname", "vg", value)
-	reconcile_vgname = value
+	reconcileVgname = value
 	return nil
 }
 
@@ -225,7 +226,7 @@ func (suite *FakeVGTestSuite) iSetPVCLabel(value string) error {
 func (suite *FakeVGTestSuite) iForcePVCLabelError(value string) error {
 	testLog.Info("force label error", "label", value)
 	vgname = value[:13]
-	LABEL_ERROR = true
+	labelError = true
 	return nil
 }
 
@@ -236,18 +237,19 @@ func (suite *FakeVGTestSuite) iSetNSName(value string) error {
 	return nil
 }
 
+//CleanupVolsOnArray delete pflex array volumes
 func (suite *FakeVGTestSuite) CleanupVolsOnArray() error {
 
 	//  array cleanup
 	testLog.Info("cleanup volumes")
-	for _, srcId := range suite.srcVolIDs {
-		testLog.Info("cleanup volume", "id", srcId)
+	for _, srcID := range suite.srcVolIDs {
+		testLog.Info("cleanup volume", "id", srcID)
 		for {
-			snapID, _ := suite.iCallGetSnapshot(srcId)
+			snapID, _ := suite.iCallGetSnapshot(srcID)
 			if snapID != "" {
 				_ = suite.iCallDeleteSnapshot(snapID)
 			} else {
-				_ = suite.iCallDeleteVolume(srcId)
+				_ = suite.iCallDeleteVolume(srcID)
 				break
 			}
 		}
@@ -256,18 +258,18 @@ func (suite *FakeVGTestSuite) CleanupVolsOnArray() error {
 }
 
 // cleanup by calling driver
-func (suite *FakeVGTestSuite) iCallDeleteVolume(srcId string) error {
+func (suite *FakeVGTestSuite) iCallDeleteVolume(srcID string) error {
 	ctx := context.Background()
 	delVolReq := new(csi.DeleteVolumeRequest)
-	delVolReq.VolumeId = srcId
+	delVolReq.VolumeId = srcID
 	_, err := driverClient.DeleteVolume(ctx, delVolReq)
 
 	if err != nil {
 		testLog.Error(err, "DeleteVolume failed")
 		return err
-	} else {
-		testLog.Info("DeleteVolume completed successfully", "volid", srcId)
 	}
+	testLog.Info("DeleteVolume completed successfully", "volid", srcID)
+
 	return nil
 }
 
@@ -356,15 +358,14 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 	if expected == "none" {
 		if len(suite.errs) == 0 {
 			return nil
-		} else {
-			return fmt.Errorf("unexpected error(s): %s", suite.errs[0])
 		}
+		return fmt.Errorf("unexpected error(s): %s", suite.errs[0])
 	}
 	// We expect an error...
 	if len(suite.errs) == 0 {
 		return errors.New("there were no errors but we expected: " + expected)
 	}
-	var FOUND_ERROR = false
+	var foundError = false
 	for _, err := range suite.errs {
 		testLog.V(1).Info("need controller error message", "msg=", expected)
 
@@ -374,10 +375,10 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 
 		if strings.Contains(gotError, expected) {
 			testLog.Info("expected error message found", "msg=", err.Error())
-			FOUND_ERROR = true
+			foundError = true
 		}
 	}
-	if !FOUND_ERROR {
+	if !foundError {
 		testLog.Error(nil, "expected error message not found")
 		return fmt.Errorf("error %s expected message not found", expected)
 	}
@@ -385,20 +386,19 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 	return nil
 }
 
-// refer fake_client.go , force calls to k8s to return error during controller error handling
-
+//ShouldFail refer fake_client.go , force calls to k8s to return error during controller error handling
 func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) error {
 	switch v := obj.(type) {
 	case *storagev1alpha2.DellCsiVolumeGroupSnapshot:
 		vg := obj.(*storagev1alpha2.DellCsiVolumeGroupSnapshot)
-		if method == "Update" && UPDATE_VG_ERROR {
+		if method == "Update" && updateVgError {
 			testLog.Info("ShouldFail", "force vg error", vg.Name)
 			testLog.Info("ShouldFail", "force update vg error", v)
 			return errors.New("unable to update VG")
 		}
 	case *s1.VolumeSnapshot:
 		vs := obj.(*s1.VolumeSnapshot)
-		if method == "Create" && CREATE_VS_ERROR {
+		if method == "Create" && createVsError {
 			if strings.Contains(vs.Name, "-1-") {
 				testLog.Info("ShouldFail", "force vs error", vs.Name)
 				testLog.Info("ShouldFail", "force create vs error", v)
@@ -407,14 +407,14 @@ func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) erro
 		}
 	case *s1.VolumeSnapshotContent:
 		vsc := obj.(*s1.VolumeSnapshotContent)
-		if method == "Create" && CREATE_VC_ERROR {
+		if method == "Create" && createVcError {
 			snapshotName := vsc.Spec.VolumeSnapshotRef.Name
 			if strings.Contains(snapshotName, "-1-") {
 				testLog.Info("ShouldFail", "force vsc error", v)
 				testLog.Info("ShouldFail", "force vsc error", vsc.Name)
 				return errors.New("unable to create VolsnapContent")
 			}
-		} else if method == "Update" && UPDATE_VC_ERROR {
+		} else if method == "Update" && updateVcError {
 			testLog.Info("ShouldFail", "force update vs error", v)
 			return errors.New("unable to update VolsnapContent")
 		}
@@ -451,16 +451,16 @@ func (suite *FakeVGTestSuite) aVgsController() error {
 	driverClient = csi.NewControllerClient(csiConn)
 	suite.srcVolNames = make([]string, 0)
 	suite.errs = make([]error, 0)
-	reconcile_vgname = vgname
+	reconcileVgname = vgname
 
-	LABEL_ERROR = false
-	NOPV_ERROR = false
-	NOVSC_ERROR = false
-	DRIVER_NAME_ERROR = false
-	CREATE_VC_ERROR = false
-	CREATE_VS_ERROR = false
-	UPDATE_VC_ERROR = false
-	UPDATE_VG_ERROR = false
+	labelError = false
+	noPvError = false
+	noVscError = false
+	driverNameError = false
+	createVcError = false
+	createVsError = false
+	updateVcError = false
+	updateVgError = false
 
 	// set default count to 2
 	suite.VolCount = 2
@@ -471,16 +471,16 @@ func (suite *FakeVGTestSuite) aVgsController() error {
 }
 
 func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() error {
-	suite.makeFakeVSC()
+	_ = suite.makeFakeVSC()
 
-	for _, srcId := range suite.srcVolIDs {
+	for _, srcID := range suite.srcVolIDs {
 		// pre-req pv must  exist
-		testLog.Info("Make Fake PV and PVC for", setlabel, srcId)
-		_ = suite.makeFakePV(srcId)
-		_ = suite.makeFakePVC(srcId)
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcID)
+		_ = suite.makeFakePV(srcID)
+		_ = suite.makeFakePVC(srcID)
 	}
 
-	suite.makeFakeVG()
+	_ = suite.makeFakeVG()
 
 	vgReconcile, req := suite.makeReconciler()
 
@@ -495,7 +495,7 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 	vg := new(storagev1alpha2.DellCsiVolumeGroupSnapshot)
 	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
-		Name:      reconcile_vgname,
+		Name:      reconcileVgname,
 	}, vg)
 	if err != nil {
 		suite.addError(err)
@@ -574,7 +574,7 @@ func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiV
 	req = reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Namespace: ns,
-			Name:      reconcile_vgname,
+			Name:      reconcileVgname,
 		},
 	}
 
@@ -595,9 +595,11 @@ func (suite *FakeVGTestSuite) iCallTestDeleteVG() error {
 
 	testLog.Info("vg got from icalltestdeleteVG is", "vg", vg)
 
-	suite.mockUtils.FakeClient.SetDeletionTimeStamp(ctx, vg)
-	suite.mockUtils.FakeClient.Delete(ctx, vg)
-
+	derr := suite.mockUtils.FakeClient.SetDeletionTimeStamp(ctx, vg)
+	derr = suite.mockUtils.FakeClient.Delete(ctx, vg)
+	if derr != nil {
+		testLog.Error(derr, "vg fake delete failed", "name", vgname, "ns", ns)
+	}
 	if err := suite.runVGReconcile(); err != nil {
 		suite.addError(err)
 	}
@@ -620,14 +622,14 @@ func (suite *FakeVGTestSuite) iCallTestReconcileErrorVGFor(errorType string) err
 	// pre-req volume snapshot class must exist
 	_ = suite.makeFakeVSC()
 
-	for _, srcId := range suite.srcVolIDs {
+	for _, srcID := range suite.srcVolIDs {
 
 		// pre-req pv must  exist
-		testLog.Info("Make Fake PV and PVC for", setlabel, srcId)
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcID)
 
-		_ = suite.makeFakePV(srcId)
+		_ = suite.makeFakePV(srcID)
 
-		_ = suite.makeFakePVC(srcId)
+		_ = suite.makeFakePVC(srcID)
 	}
 
 	// user makes a vg create request to controller to select pvc with this label
@@ -635,22 +637,22 @@ func (suite *FakeVGTestSuite) iCallTestReconcileErrorVGFor(errorType string) err
 
 	// run the VG controller Reconcile
 	if strings.Compare(errorType, "VS") == 0 {
-		CREATE_VS_ERROR = true
+		createVsError = true
 	}
 	if strings.Compare(errorType, "VC") == 0 {
-		CREATE_VC_ERROR = true
+		createVcError = true
 	}
 	err := suite.runVGReconcile()
 	if err != nil {
-		CREATE_VS_ERROR = false
-		CREATE_VC_ERROR = false
+		createVsError = false
+		createVcError = false
 		suite.errs = nil
 		if err = suite.runVGReconcile(); err != nil {
 			suite.addError(err)
 		}
 	} else {
 		err = errors.New("forced Reconcile Error did not occur")
-		testLog.Error(err, reconcile_vgname)
+		testLog.Error(err, reconcileVgname)
 		suite.addError(err)
 	}
 	if len(suite.errs) == 0 {
@@ -676,14 +678,14 @@ func (suite *FakeVGTestSuite) iCallTestCreateVG() error {
 	// pre-req volume snapshot class must exist
 	_ = suite.makeFakeVSC()
 
-	for _, srcId := range suite.srcVolIDs {
+	for _, srcID := range suite.srcVolIDs {
 
 		// pre-req pv must  exist
-		testLog.Info("Make Fake PV and PVC for", setlabel, srcId)
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcID)
 
-		_ = suite.makeFakePV(srcId)
+		_ = suite.makeFakePV(srcID)
 
-		_ = suite.makeFakePVC(srcId)
+		_ = suite.makeFakePVC(srcID)
 	}
 
 	// user makes a vg create request to controller to select pvc with this label
@@ -717,14 +719,14 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGWithBadVsc() error {
 	//pre-req volume snapshot class must exist
 	_ = suite.makeBadVSC("red-rrr")
 
-	for _, srcId := range suite.srcVolIDs {
+	for _, srcID := range suite.srcVolIDs {
 
 		// pre-req pv must  exist
-		testLog.Info("Make Fake PV and PVC for", setlabel, srcId)
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcID)
 
-		_ = suite.makeFakePV(srcId)
+		_ = suite.makeFakePV(srcID)
 
-		_ = suite.makeFakePVC(srcId)
+		_ = suite.makeFakePVC(srcID)
 	}
 
 	// user makes a vg create request to controller to select pvc with this label
@@ -750,18 +752,18 @@ func (suite *FakeVGTestSuite) verifyLabel(obj runtime.Object, key string) error 
 	testLog.V(1).Info("found fake object ", "Labels", vsnap.Labels)
 	//vsnap.ObjectMeta.Name snap.ObjectMeta.Labels
 	lbs := vsnap.ObjectMeta.Labels
-	var EXPECTED_LABEL_FOUND bool
+	var expectedLabelFound bool
 	for k, l := range lbs {
-		testLog.Info("label match", k, l, "vg", vgname, "reconcile", reconcile_vgname)
+		testLog.Info("label match", k, l, "vg", vgname, "reconcile", reconcileVgname)
 		expect := vgname
-		if reconcile_vgname != vgname {
-			expect = reconcile_vgname
+		if reconcileVgname != vgname {
+			expect = reconcileVgname
 		}
 		if k == "snapshotGroup" && l == expect {
-			EXPECTED_LABEL_FOUND = true
+			expectedLabelFound = true
 		}
 	}
-	if !EXPECTED_LABEL_FOUND {
+	if !expectedLabelFound {
 		err = errors.New("VolumeSnapshot does not have label key=snapshotGroup with proper value")
 		testLog.Error(err, vsnap.Name)
 		suite.addError(err)
@@ -782,14 +784,14 @@ func (suite *FakeVGTestSuite) verify() error {
 	event := <-fakeRecorder.Events
 	fmt.Println("DEBUG event :", event)
 
-	var FOUND_VG bool
+	var foundVG bool
 	for k, v := range objMap {
 		testLog.V(1).Info("found fake object ", k.Name, "created or updated by reconcile")
 		// verify label
-		if strings.HasPrefix(k.Name, vgname) && strings.Contains(k.Name, "-"+PVC_NAME_PREFIX) {
+		if strings.HasPrefix(k.Name, vgname) && strings.Contains(k.Name, "-"+pvcNamePrefix) {
 			// v is of type *s1.VolumeSnapshot
 			// check label put by controller is valid
-			if reconcile_vgname != vgname && strings.HasPrefix(k.Name, reconcile_vgname) {
+			if reconcileVgname != vgname && strings.HasPrefix(k.Name, reconcileVgname) {
 				err := suite.verifyLabel(v, "snapshotGroup")
 				if err != nil {
 					return err
@@ -797,8 +799,8 @@ func (suite *FakeVGTestSuite) verify() error {
 			}
 		}
 		vg := vgname
-		if reconcile_vgname != vgname {
-			vg = reconcile_vgname
+		if reconcileVgname != vgname {
+			vg = reconcileVgname
 		}
 		if k.Name == vg {
 			// assert v is of desired type
@@ -807,7 +809,7 @@ func (suite *FakeVGTestSuite) verify() error {
 			testLog.Info("found VG ", "name", volGroup.Name)
 
 			if k.Name == volGroup.Name {
-				FOUND_VG = true
+				foundVG = true
 				// todo verify
 				// compare new changes  volGroup.Status.CreationTime
 				// compare new changes  volGroup.Status.Snapshots
@@ -863,7 +865,7 @@ func (suite *FakeVGTestSuite) verify() error {
 					dIndex := re.SubexpIndex("sdigit")
 
 					testLog.Info("snap name ", "sn", sn)
-					testLog.Info("snap name ", "sn PVC_NAME_PREFIX", PVC_NAME_PREFIX)
+					testLog.Info("snap name ", "sn pvcNamePrefix", pvcNamePrefix)
 
 					if matches != nil && dIndex != 0 {
 						testLog.Info("snap name ", "sn matches", matches[dIndex])
@@ -876,8 +878,8 @@ func (suite *FakeVGTestSuite) verify() error {
 			}
 		}
 	}
-	if !FOUND_VG {
-		testLog.Error(errors.New("unable to find VG"), vgname, reconcile_vgname)
+	if !foundVG {
+		testLog.Error(errors.New("unable to find VG"), vgname, reconcileVgname)
 	}
 	return nil
 }
@@ -897,13 +899,13 @@ func (suite *FakeVGTestSuite) debugFakeObjects() {
 func (suite *FakeVGTestSuite) makeFakeVG() error {
 
 	getlabel := setlabel
-	if LABEL_ERROR {
+	if labelError {
 		testLog.Info("vg force label error")
 		getlabel = "xxxxx"
-		LABEL_ERROR = false
+		labelError = false
 
 	}
-	if NOVSC_ERROR {
+	if noVscError {
 		vscname = "no-vsc-for-vg"
 	}
 	// empty list to be filled by controller
@@ -911,7 +913,7 @@ func (suite *FakeVGTestSuite) makeFakeVG() error {
 
 	// passing ids works , label on pvc also works
 
-	volumeGroup := common.MakeVG(reconcile_vgname, ns, suite.driverName, getlabel, vscname, "Delete", nil)
+	volumeGroup := common.MakeVG(reconcileVgname, ns, suite.driverName, getlabel, vscname, "Delete", nil)
 
 	// make a k8s object and save in memory, Reconcile is called to update this object and this test can verify
 	// hence there is no need to have a k8s environment
@@ -920,13 +922,13 @@ func (suite *FakeVGTestSuite) makeFakeVG() error {
 	return suite.mockUtils.FakeClient.Create(ctx, &volumeGroup)
 }
 
-func (suite *FakeVGTestSuite) makeFakePVC(srcId string) error {
+func (suite *FakeVGTestSuite) makeFakePVC(srcID string) error {
 
-	pvcname := PVC_NAME_PREFIX + "-" + srcId
+	pvcname := pvcNamePrefix + "-" + srcID
 	lbls := labels.Set{
 		"volume-group": setlabel,
 	}
-	pvname := PV_NAME_PREFIX + "-" + srcId
+	pvname := pvNamePrefix + "-" + srcID
 	pvcObj := common.MakePVC(pvcname, ns, scname, pvname, lbls)
 	pvcObj.Status.Phase = core_v1.ClaimBound
 	ctx := context.Background()
@@ -950,10 +952,10 @@ func (suite *FakeVGTestSuite) makeBadVSC(drivername string) error {
 	return err
 }
 
-func (suite *FakeVGTestSuite) makeFakePV(srcId string) error {
+func (suite *FakeVGTestSuite) makeFakePV(srcID string) error {
 
-	pvname := PV_NAME_PREFIX + "-" + srcId
-	if NOPV_ERROR {
+	pvname := pvNamePrefix + "-" + srcID
+	if noPvError {
 		objMap := suite.mockUtils.FakeClient.Objects
 		for k := range objMap {
 			if k.Name == pvname {
@@ -970,7 +972,7 @@ func (suite *FakeVGTestSuite) makeFakePV(srcId string) error {
 		"StoragePool":     "pool1",
 	}
 
-	pvObj := common.MakePV(pvname, suite.driverName, srcId, scname, volumeAttributes)
+	pvObj := common.MakePV(pvname, suite.driverName, srcID, scname, volumeAttributes)
 	ctx := context.Background()
 	suite.removeExistingObject(pvname, ns, "pv")
 	err := suite.mockUtils.FakeClient.Create(ctx, &pvObj)
@@ -1007,18 +1009,17 @@ func (suite *FakeVGTestSuite) iCallDeleteSnapshot(snapID string) error {
 	if err != nil {
 		testLog.Error(err, "test DeleteSnapshot returned error")
 		return err
-	} else {
-		testLog.Info("test cleanup DeleteSnapshot ok", "snap", req.SnapshotId)
 	}
+	testLog.Info("test cleanup DeleteSnapshot ok", "snap", req.SnapshotId)
 	return nil
 }
 
 // helper method to call powerflex csi driver
-func (suite *FakeVGTestSuite) iCallGetSnapshot(srcId string) (string, error) {
+func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	var err error
 	ctx := context.Background()
-	// SnapshotId: idToQuery
-	req := &csi.ListSnapshotsRequest{SourceVolumeId: srcId}
+	// SnapshotID: idToQuery
+	req := &csi.ListSnapshotsRequest{SourceVolumeId: srcID}
 
 	// call csi-driver to query powerflex array
 	snaps, err := driverClient.ListSnapshots(ctx, req)
@@ -1031,8 +1032,8 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcId string) (string, error) {
 		id := entry.GetSnapshot().SnapshotId
 		ts := ptypes.TimestampString(entry.GetSnapshot().CreationTime)
 		foundsrcID := entry.GetSnapshot().SourceVolumeId
-		testLog.V(1).Info("look for volume ", srcId, foundsrcID)
-		if id != "" && foundsrcID != "" && strings.Contains(srcId, foundsrcID) {
+		testLog.V(1).Info("look for volume ", srcID, foundsrcID)
+		if id != "" && foundsrcID != "" && strings.Contains(srcID, foundsrcID) {
 			testLog.Info("test found snapshot in powerflex ", "id:", id, "source ID", foundsrcID, "time", ts)
 			return id, nil
 		}
@@ -1040,7 +1041,7 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcId string) (string, error) {
 	return "", nil
 }
 
-//run once per suite to remove array volumes
+//TearDownTestSuite run once per suite to remove array volumes
 func (suite *FakeVGTestSuite) TearDownTestSuite() {
 	testLog.Info("Cleaning up resources...")
 	_ = suite.CleanupVolsOnArray()

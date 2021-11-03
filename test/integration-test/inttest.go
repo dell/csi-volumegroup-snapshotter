@@ -1,4 +1,4 @@
-package integration_testvg
+package testvg
 
 import (
 	"bufio"
@@ -14,16 +14,16 @@ import (
 	"time"
 
 	"github.com/cucumber/godog"
-	"github.com/dell/csi-vxflexos/provider"
-	"github.com/dell/csi-vxflexos/service"
+	"github.com/dell/csi-vxflexos/v2/provider"
+	"github.com/dell/csi-vxflexos/v2/service"
 	"github.com/dell/gocsi/utils"
 	"google.golang.org/grpc"
 )
 
 const (
-	datafile   = "/tmp/datafile"
-	datadir    = "/tmp/datadir"
-	configFile = "./config.json"
+	datafile   string = "/tmp/datafile"
+	datadir    string = "/tmp/datadir"
+	configFile string = "./config.json"
 )
 
 var grpcClient *grpc.ClientConn
@@ -55,7 +55,7 @@ func init() {
 		for err == nil && !isPrefix {
 			line, _, _ := r.ReadLine()
 			if strings.Contains(string(line), "127.0.0.1") {
-				err := fmt.Errorf("Integration test pre-requisite powerflex array endpoint %s is not ok, setup ../../config.json \n", string(line))
+				err := fmt.Errorf("integration test pre-requisite powerflex array endpoint %s is not ok, setup ../../config.json", string(line))
 				panic(err)
 			}
 			if strings.Contains(string(line), "mdm") {
@@ -75,16 +75,17 @@ func init() {
 	}
 }
 
+//TestDummy not used
 func TestDummy(t *testing.T) {
 
 }
 
-// similar to driver integration test
+//TestMain similar to driver integration test
 // use godog feature to run init and cleanup steps before and after all scenarios
 func TestMain(m *testing.M) {
 	var stop func()
 	ctx := context.Background()
-	os.Remove(sock)
+	_ = os.Remove(sock)
 	fmt.Printf("calling startServer\n")
 	grpcClient, stop = startServer(ctx)
 
@@ -127,7 +128,7 @@ func startServer(ctx context.Context) (*grpc.ClientConn, func()) {
 			fmt.Printf("serve error: %s\n", err.Error())
 			fmt.Printf("http: Server closed")
 			_, addr, _ := utils.GetCSIEndpoint()
-			os.Remove(addr)
+			_ = os.Remove(addr)
 			os.Exit(1)
 		}
 	}()
@@ -149,7 +150,7 @@ func startServer(ctx context.Context) (*grpc.ClientConn, func()) {
 	fmt.Printf("grpc.DialContext returned ok\n")
 
 	return client, func() {
-		client.Close()
+		_ = client.Close()
 		sp.GracefulStop(ctx)
 	}
 }
