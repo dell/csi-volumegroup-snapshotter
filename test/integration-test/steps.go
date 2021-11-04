@@ -18,7 +18,6 @@ import (
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 
-	//"github.com/dell/csi-vxflexos/service"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
 
