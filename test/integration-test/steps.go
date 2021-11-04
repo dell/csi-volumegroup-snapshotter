@@ -18,6 +18,7 @@ import (
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 
+	//"github.com/dell/csi-vxflexos/service"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
 
@@ -287,8 +288,8 @@ func (suite *FakeVGTestSuite) iCallCreateVolumes(count int, vname string, size i
 			suite.addError(err)
 		} else {
 			testLog.Info("CreateVolume", volResp.GetVolume().VolumeContext["Name"],
-				volResp.GetVolume().VolumeID)
-			suite.volID = volResp.GetVolume().VolumeID
+				volResp.GetVolume().VolumeId)
+			suite.volID = volResp.GetVolume().VolumeId
 			suite.srcVolIDs = append(suite.srcVolIDs, suite.volID)
 		}
 	}
@@ -1002,7 +1003,7 @@ func (suite *FakeVGTestSuite) removeExistingObject(objName string, newNS string,
 func (suite *FakeVGTestSuite) iCallDeleteSnapshot(snapID string) error {
 	ctx := context.Background()
 	req := &csi.DeleteSnapshotRequest{
-		SnapshotID: snapID,
+		SnapshotId: snapID,
 	}
 	// call csi driver using grpc client
 	_, err := driverClient.DeleteSnapshot(ctx, req)
@@ -1029,7 +1030,7 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	entries := snaps.GetEntries()
 	for j := 0; j < len(entries); j++ {
 		entry := entries[j]
-		id := entry.GetSnapshot().SnapshotID
+		id := entry.GetSnapshot().SnapshotId
 		ts := ptypes.TimestampString(entry.GetSnapshot().CreationTime)
 		foundsrcID := entry.GetSnapshot().SourceVolumeId
 		testLog.V(1).Info("look for volume ", srcID, foundsrcID)

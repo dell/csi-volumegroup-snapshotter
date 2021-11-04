@@ -24,7 +24,11 @@ jobs:
       - name: Run Go Security
         uses: securego/gosec@master
         with:
+<<<<<<< HEAD
           args: -exclude-dir test ./...
+=======
+          args: -exclude=G108,G402 ./...
+>>>>>>> b8be98c... add PR checks
   malware_security_scan:
     name: Malware Scanner
     runs-on: ubuntu-latest
