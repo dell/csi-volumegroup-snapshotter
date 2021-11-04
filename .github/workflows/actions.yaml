@@ -25,10 +25,14 @@ jobs:
         uses: securego/gosec@master
         with:
 <<<<<<< HEAD
+<<<<<<< HEAD
           args: -exclude-dir test ./...
 =======
           args: -exclude=G108,G402 ./...
 >>>>>>> b8be98c... add PR checks
+=======
+          args: -exclude-dir test ./...
+>>>>>>> b10cd6f... exclude test folder for gosec
   malware_security_scan:
     name: Malware Scanner
     runs-on: ubuntu-latest
