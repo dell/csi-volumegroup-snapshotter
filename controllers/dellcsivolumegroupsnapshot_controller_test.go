@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	pkg_common "github.com/dell/csi-volumegroup-snapshotter/pkg/common"
 	connection "github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
@@ -69,7 +69,7 @@ func (suite *VGSControllerTestSuite) SetupTest() {
 }
 
 func (suite *VGSControllerTestSuite) Init() {
-	v1alpha2.AddToScheme(scheme.Scheme)
+	vgsv1.AddToScheme(scheme.Scheme)
 	s1.AddToScheme(scheme.Scheme)
 	suite.driver = common.Driver{
 		DriverName: common.DriverName,
@@ -260,7 +260,7 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 	fmt.Printf("reconcile response res=%#v\n", res)
 
 	// get the returned new VG
-	newVg := new(v1alpha2.DellCsiVolumeGroupSnapshot)
+	newVg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 
 	err := suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
@@ -292,7 +292,7 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 		vgReconcile.HandleSnapContentDelete(content)
 	}
 
-	newVg = new(v1alpha2.DellCsiVolumeGroupSnapshot)
+	newVg = new(vgsv1.DellCsiVolumeGroupSnapshot)
 
 	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
@@ -548,7 +548,7 @@ func (suite *VGSControllerTestSuite) makeFakeVSCDriver(ctx context.Context) {
 	assert.Nil(suite.T(), err)
 }
 
-func (suite *VGSControllerTestSuite) makeFakeVG(ctx context.Context, localPvcLabel, localVgName, ns string, reclaimPolicy v1alpha2.MemberReclaimPolicy, localPvcList []string) {
+func (suite *VGSControllerTestSuite) makeFakeVG(ctx context.Context, localPvcLabel, localVgName, ns string, reclaimPolicy vgsv1.MemberReclaimPolicy, localPvcList []string) {
 	volumeGroup := common.MakeVG(localVgName, ns, suite.driver.DriverName, localPvcLabel, vscName, reclaimPolicy, localPvcList)
 	err := suite.mockUtils.FakeClient.Create(ctx, &volumeGroup)
 	assert.Nil(suite.T(), err)
@@ -556,7 +556,7 @@ func (suite *VGSControllerTestSuite) makeFakeVG(ctx context.Context, localPvcLab
 
 func (suite *VGSControllerTestSuite) deleteFakeVG(ctx context.Context, localVgName string, setDeletionTimeStamp bool) {
 	ns := suite.mockUtils.Specs.Namespace
-	vg := new(v1alpha2.DellCsiVolumeGroupSnapshot)
+	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
 		Name:      localVgName,
@@ -643,7 +643,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 
 	// find existing vg , get volsnap , get volsnapcotent
 
-	vg := &v1alpha2.DellCsiVolumeGroupSnapshot{}
+	vg := &vgsv1.DellCsiVolumeGroupSnapshot{}
 	nameSpacedName := types.NamespacedName{
 		Namespace: suite.mockUtils.Specs.Namespace,
 		Name:      localVgName,

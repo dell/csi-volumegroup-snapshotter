@@ -30,7 +30,7 @@ spec:
       jsonPath: .status.status
       name: Status
       type: string
-    name: v1alpha2
+    name: v1
     schema:
       openAPIV3Schema:
         description: DellCsiVolumeGroupSnapshot is the Schema for the dellcsivolumegroupsnapshots

@@ -93,7 +93,7 @@ Here is an example of a VolumeGroupSnapshot instance in Kubernetes:
 ```yaml
 Name:         demo-vg
 Namespace:    helmtest-vxflexos
-API Version:  volumegroup.storage.dell.com/v1alpha2
+API Version:  volumegroup.storage.dell.com/v1
 Kind:         DellCsiVolumeGroupSnapshot
 Spec:
   Driver Name:            csi-vxflexos.dellemc.com
@@ -127,7 +127,7 @@ Some of the above fields are described here:
 
 To create an instance of VolumeGroupSnapshot in Kubernetes cluster, create .yaml file similar to vg.yaml in the top-level folder. Below is a sample .yaml followed by a table of parameters:
 ```
-apiVersion: volumegroup.storage.dell.com/v1alpha2
+apiVersion: volumegroup.storage.dell.com/v1
 kind: DellCsiVolumeGroupSnapshot
 metadata:
   # Name must be 13 characters or less in length
