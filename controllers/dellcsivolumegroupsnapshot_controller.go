@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	volumegroupv1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/common"
 	csidriver "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
@@ -93,7 +93,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 		return ctrl.Result{}, schemaErr
 	}
 
-	vg := new(volumegroupv1alpha2.DellCsiVolumeGroupSnapshot)
+	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	log.Info("VG Snapshotter reconcile namespace", "req", req.NamespacedName.Namespace)
 	if err := r.Get(ctx, req.NamespacedName, vg); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -253,7 +253,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) driverVerification(sc *s1.VolumeS
 func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Context,
 	res *csiext.CreateVolumeGroupSnapshotResponse,
 	volIDPvcNameMap map[string]string,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	sc *s1.VolumeSnapshotClass,
 	groupName string) (ctrl.Result, error) {
 
@@ -319,7 +319,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 	}
 
 	snaps = strings.TrimRight(snaps, ",")
-	vg.Status = volumegroupv1alpha2.DellCsiVolumeGroupSnapshotStatus{
+	vg.Status = vgsv1.DellCsiVolumeGroupSnapshotStatus{
 		SnapshotGroupID: res.SnapshotGroupID,
 		Snapshots:       snaps,
 		CreationTime:    metav1.Time{Time: *createdAt},
@@ -363,7 +363,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 // handles vg deletion
 func (r *DellCsiVolumeGroupSnapshotReconciler) deleteVg(
 	ctx context.Context,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot) error {
+	vg *vgsv1.DellCsiVolumeGroupSnapshot) error {
 	log.Info("VG Snapshotter deletion triggered")
 
 	// get deletion policy from volumesnapshotclass
@@ -419,7 +419,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) createVolumeSnapshot(
 	ctx context.Context,
 	volumeSnapshotName string,
 	contentName string,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	s *csiext.Snapshot,
 	sc *s1.VolumeSnapshotClass,
 	failedMap map[string]string) (bool, string, error) {
@@ -556,7 +556,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) updateVolumeSnapshotContentStatus
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolsnapcontent(
 	ctx context.Context,
 	volsnap *s1.VolumeSnapshot,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	snapID string) (string, bool, error) {
 
 	vcList := &s1.VolumeSnapshotContentList{}
@@ -586,7 +586,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolsnapcontent(
 func (r *DellCsiVolumeGroupSnapshotReconciler) validateExistingVolSnapcontent(
 	vc s1.VolumeSnapshotContent,
 	volsnap *s1.VolumeSnapshot,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	snapID string) (bool, error) {
 	var existVolumeSnapshotContentError bool
 	updateSnapIDForContent := false
@@ -628,7 +628,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) validateExistingVolSnapcontent(
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 	ctx context.Context,
 	volsnap *s1.VolumeSnapshot,
-	vg *volumegroupv1alpha2.DellCsiVolumeGroupSnapshot,
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	snapID string) (bool, error) {
 
 	log.Info("VG Snapshotter", "volumesnapshot exists skip create name=", volsnap.Name)
@@ -1007,7 +1007,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj inter
 
 		schemaMutex := sync.RWMutex{}
 		schemaMutex.Lock()
-		vg := new(volumegroupv1alpha2.DellCsiVolumeGroupSnapshot)
+		vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 
 		err := r.Get(ctx, namespacedName, vg)
 		if err == nil {
@@ -1050,7 +1050,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) SetupWithManager(mgr ctrl.Manager
 	go r.snapContentWatch()
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&volumegroupv1alpha2.DellCsiVolumeGroupSnapshot{}).
+		For(&vgsv1.DellCsiVolumeGroupSnapshot{}).
 		WithEventFilter(r.ignoreUpdatePredicate()).
 		WithOptions(reconcile.Options{
 			RateLimiter:             limiter,

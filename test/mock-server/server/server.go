@@ -35,13 +35,6 @@ func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.
 	return out, err
 }
 
-//DeleteVolumeGroupSnapshot delete vgs
-func (vgs *MockVolumeGroupSnapshotServer) DeleteVolumeGroupSnapshot(ctx context.Context, in *csi_ext.DeleteVolumeGroupSnapshotRequest) (*csi_ext.DeleteVolumeGroupSnapshotResponse, error) {
-	out := &csi_ext.DeleteVolumeGroupSnapshotResponse{}
-	err := FindStub("VolumeGroupSnapshot", "DeleteVolumeGroupSnapshot", in, out)
-	return out, err
-}
-
 type payload struct {
 	Service string      `json:"service"`
 	Method  string      `json:"method"`

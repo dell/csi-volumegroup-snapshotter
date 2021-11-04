@@ -31,7 +31,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	volumegroupv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	volumegroupv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 
 	// latest v1 from external does compile ok
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
