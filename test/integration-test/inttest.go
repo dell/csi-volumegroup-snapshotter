@@ -14,8 +14,13 @@ import (
 	"time"
 
 	"github.com/cucumber/godog"
+<<<<<<< HEAD
 	"github.com/dell/csi-vxflexos/v2/provider"
 	"github.com/dell/csi-vxflexos/v2/service"
+=======
+	"github.com/dell/csi-vxflexos/provider"
+	"github.com/dell/csi-vxflexos/service"
+>>>>>>> a6291e3... add
 	"github.com/dell/gocsi/utils"
 	"google.golang.org/grpc"
 )
@@ -75,12 +80,19 @@ func init() {
 	}
 }
 
+<<<<<<< HEAD
 //TestDummy not used
+=======
+>>>>>>> a6291e3... add
 func TestDummy(t *testing.T) {
 
 }
 
+<<<<<<< HEAD
 //TestMain similar to driver integration test
+=======
+// similar to driver integration test
+>>>>>>> a6291e3... add
 // use godog feature to run init and cleanup steps before and after all scenarios
 func TestMain(m *testing.M) {
 	var stop func()
