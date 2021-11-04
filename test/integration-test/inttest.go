@@ -81,18 +81,26 @@ func init() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //TestDummy not used
 =======
 >>>>>>> a6291e3... add
+=======
+//TestDummy not used
+>>>>>>> 4fcacba... fix lint erros
 func TestDummy(t *testing.T) {
 
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //TestMain similar to driver integration test
 =======
 // similar to driver integration test
 >>>>>>> a6291e3... add
+=======
+//TestMain similar to driver integration test
+>>>>>>> 4fcacba... fix lint erros
 // use godog feature to run init and cleanup steps before and after all scenarios
 func TestMain(m *testing.M) {
 	var stop func()
