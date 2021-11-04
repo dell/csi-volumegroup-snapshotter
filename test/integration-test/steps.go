@@ -287,8 +287,8 @@ func (suite *FakeVGTestSuite) iCallCreateVolumes(count int, vname string, size i
 			suite.addError(err)
 		} else {
 			testLog.Info("CreateVolume", volResp.GetVolume().VolumeContext["Name"],
-				volResp.GetVolume().VolumeId)
-			suite.volID = volResp.GetVolume().VolumeId
+				volResp.GetVolume().VolumeID)
+			suite.volID = volResp.GetVolume().VolumeID
 			suite.srcVolIDs = append(suite.srcVolIDs, suite.volID)
 		}
 	}
@@ -1002,7 +1002,7 @@ func (suite *FakeVGTestSuite) removeExistingObject(objName string, newNS string,
 func (suite *FakeVGTestSuite) iCallDeleteSnapshot(snapID string) error {
 	ctx := context.Background()
 	req := &csi.DeleteSnapshotRequest{
-		SnapshotId: snapID,
+		SnapshotID: snapID,
 	}
 	// call csi driver using grpc client
 	_, err := driverClient.DeleteSnapshot(ctx, req)
@@ -1029,7 +1029,7 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	entries := snaps.GetEntries()
 	for j := 0; j < len(entries); j++ {
 		entry := entries[j]
-		id := entry.GetSnapshot().SnapshotId
+		id := entry.GetSnapshot().SnapshotID
 		ts := ptypes.TimestampString(entry.GetSnapshot().CreationTime)
 		foundsrcID := entry.GetSnapshot().SourceVolumeId
 		testLog.V(1).Info("look for volume ", srcID, foundsrcID)
