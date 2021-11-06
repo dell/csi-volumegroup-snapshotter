@@ -29,7 +29,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 BUNDLE_IMG ?= controller-bundle:$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= vg-controller:v0.3.0
+IMG ?= vg-controller:v0.3.1
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -96,7 +96,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 gosec:
-	gosec -exclude-dir=csi-vxflexos -exclude-dir=goscaleio -exclude-dir=dell-csi-extensions -quiet -log /tmp/gosec.log -out=gosecresults.csv -fmt=csv ./...
+	gosec -exclude-dir=test -exclude-dir=csi-powerflex -exclude-dir=goscaleio -exclude-dir=dell-csi-extensions -quiet -log /tmp/gosec.log -out=gosecresults.csv -fmt=csv ./...
 
 check:  gosec
 	go mod tidy
