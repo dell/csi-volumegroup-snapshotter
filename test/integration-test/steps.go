@@ -11,7 +11,7 @@ import (
 	"time"
 
 	csi "github.com/container-storage-interface/spec/lib/go/csi"
-	storagev1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	controller "github.com/dell/csi-volumegroup-snapshotter/controllers"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
 	csiclient "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
@@ -389,8 +389,8 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 //ShouldFail refer fake_client.go , force calls to k8s to return error during controller error handling
 func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) error {
 	switch v := obj.(type) {
-	case *storagev1alpha2.DellCsiVolumeGroupSnapshot:
-		vg := obj.(*storagev1alpha2.DellCsiVolumeGroupSnapshot)
+	case *vgsv1.DellCsiVolumeGroupSnapshot:
+		vg := obj.(*vgsv1.DellCsiVolumeGroupSnapshot)
 		if method == "Update" && updateVgError {
 			testLog.Info("ShouldFail", "force vg error", vg.Name)
 			testLog.Info("ShouldFail", "force update vg error", v)
@@ -428,7 +428,7 @@ func (suite *FakeVGTestSuite) aVgsController() error {
 
 	testLog.Info("Init called", "test=", "")
 
-	_ = storagev1alpha2.AddToScheme(scheme.Scheme)
+	_ = vgsv1.AddToScheme(scheme.Scheme)
 	_ = s1.AddToScheme(scheme.Scheme)
 
 	var obj []runtime.Object
@@ -492,7 +492,7 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 		return err
 	}
 
-	vg := new(storagev1alpha2.DellCsiVolumeGroupSnapshot)
+	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
 		Name:      reconcileVgname,
@@ -528,7 +528,7 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 		vgReconcile.HandleSnapContentDelete(content)
 	}
 
-	vg = new(storagev1alpha2.DellCsiVolumeGroupSnapshot)
+	vg = new(vgsv1.DellCsiVolumeGroupSnapshot)
 	err = suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
 		Namespace: ns,
 		Name:      vgname,
@@ -582,7 +582,7 @@ func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiV
 }
 
 func (suite *FakeVGTestSuite) iCallTestDeleteVG() error {
-	vg := &storagev1alpha2.DellCsiVolumeGroupSnapshot{}
+	vg := &vgsv1.DellCsiVolumeGroupSnapshot{}
 	ctx := context.Background()
 
 	if err := suite.mockUtils.FakeClient.Get(ctx, client.ObjectKey{
@@ -779,7 +779,7 @@ func (suite *FakeVGTestSuite) verify() error {
 
 	// get the fake objects we created before reconcile
 	objMap := suite.mockUtils.FakeClient.Objects
-	var volGroup *storagev1alpha2.DellCsiVolumeGroupSnapshot
+	var volGroup *vgsv1.DellCsiVolumeGroupSnapshot
 
 	event := <-fakeRecorder.Events
 	fmt.Println("DEBUG event :", event)
@@ -804,7 +804,7 @@ func (suite *FakeVGTestSuite) verify() error {
 		}
 		if k.Name == vg {
 			// assert v is of desired type
-			volGroup = v.(*storagev1alpha2.DellCsiVolumeGroupSnapshot)
+			volGroup = v.(*vgsv1.DellCsiVolumeGroupSnapshot)
 
 			testLog.Info("found VG ", "name", volGroup.Name)
 
@@ -909,7 +909,7 @@ func (suite *FakeVGTestSuite) makeFakeVG() error {
 		vscname = "no-vsc-for-vg"
 	}
 	// empty list to be filled by controller
-	// snaps := make([]storagev1alpha2.SnapshotVolume, 0)
+	// snaps := make([]vgsv1.SnapshotVolume, 0)
 
 	// passing ids works , label on pvc also works
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	storagev1alpha2 "github.com/dell/csi-volumegroup-snapshotter/api/v1alpha2"
+	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	snapv1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
@@ -127,8 +127,8 @@ func (f Client) List(ctx context.Context, list client.ObjectList, opts ...client
 		}
 	}
 	switch list.(type) {
-	case *storagev1alpha2.DellCsiVolumeGroupSnapshotList:
-		return f.listVG(list.(*storagev1alpha2.DellCsiVolumeGroupSnapshotList))
+	case *vgsv1.DellCsiVolumeGroupSnapshotList:
+		return f.listVG(list.(*vgsv1.DellCsiVolumeGroupSnapshotList))
 	case *core_v1.PersistentVolumeClaimList:
 		return f.listPersistentVolumeClaim(list.(*core_v1.PersistentVolumeClaimList), opts[0])
 	case *core_v1.PersistentVolumeList:
@@ -149,10 +149,10 @@ func (f *Client) listVolumeSnapshotContent(list *snapv1.VolumeSnapshotContentLis
 	return nil
 }
 
-func (f *Client) listVG(list *storagev1alpha2.DellCsiVolumeGroupSnapshotList) error {
+func (f *Client) listVG(list *vgsv1.DellCsiVolumeGroupSnapshotList) error {
 	for k, v := range f.Objects {
 		if k.Kind == "DellCsiVolumeGroupSnapshot" {
-			list.Items = append(list.Items, *v.(*storagev1alpha2.DellCsiVolumeGroupSnapshot))
+			list.Items = append(list.Items, *v.(*vgsv1.DellCsiVolumeGroupSnapshot))
 		}
 	}
 	return nil

@@ -5,7 +5,7 @@ metadata:
   namespace: vxflexos
 data:
   vgs-config.yaml: |
-    apiVersion: volumegroup.storage.dell.com/v1alpha2
+    apiVersion: volumegroup.storage.dell.com/v1
     kind: DellCsiVolumeGroupSnapshot
     metadata:
       name: "vgs-test-TIME"
