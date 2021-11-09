@@ -57,7 +57,6 @@ func init() {
 
 func main() {
 	var enableLeaderElection bool
-	//var probeAddr string
 	var csiAddress string
 	var workerThreads int
 	var retryIntervalStart time.Duration
