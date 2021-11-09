@@ -20,12 +20,31 @@ echo "done creating 3 volumes and sc"
 echo "create vgs"
 kubectl create -f vgs-pvc-$1.yaml
 
-sleep 10
-snapCount=$(kubectl get volumesnapshot -n $NS | grep vgs-helm-test | wc -l)
-readySnapCount=$(kubectl get volumesnapshot -n $NS | grep vgs-helm-test | grep true | wc -l)
+sleep 30
 
-vscCount=$(kubectl get volumesnapshotcontent | grep vgs-helm-test | wc -l)
-vscReadyCount=$(kubectl get volumesnapshotcontent | grep vgs-helm-test | grep true | wc -l)
+vscCount=0
+snapCount=0
+readySnapCount=0
+vscReadyCount=0
+for i in `kubectl get  volumesnapshot -l snapshotGroup=vgs-helm-test -n helmtest-vxflexos --no-headers | awk -F' '  '{print $3}'`
+do
+        echo $i
+        let snapCount++
+        readysc=$(kubectl get  volumesnapshot -l snapshotGroup=vgs-helm-test -n helmtest-vxflexos --no-headers | grep true | wc -l)
+        if [[ $readysc > 0 ]]; then
+		let readySnapCount++
+        fi
+        vsc=$(kubectl get volumesnapshotcontent $i | wc -l)	
+        echo "vsc=$vsc"
+        if [[ $vsc > 0 ]]; then
+                let vscCount++
+        fi
+        vscr=$(kubectl get volumesnapshotcontent $i | grep true | wc -l)
+        echo "vscr true=$vscr"
+        if [[ $vscr > 0 ]]; then
+                let $vscReadyCount++
+        fi
+done
 
 if [[ $snapCount != 3 || $readySnapCount != 3 ]]; then
   echo "volumesnapshots are not ready"

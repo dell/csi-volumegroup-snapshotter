@@ -56,9 +56,7 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
 	var enableLeaderElection bool
-	//var probeAddr string
 	var csiAddress string
 	var workerThreads int
 	var retryIntervalStart time.Duration
@@ -73,10 +71,7 @@ func main() {
 	flag.DurationVar(&csiOperationTimeout, "timeout", 10*time.Second, "Timeout of waiting for response for CSI Driver")
 	//flag.StringVar(&vgContextKeyPrefix, "context-prefix", "", "All the volume-group-attribute-keys with this prefix are added as annotation to the DellCSIVolumeGroup")
 	flag.Parse()
-	//controllers.InitLabelsAndAnnotations(domain)
 
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	//flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -110,7 +105,7 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
+		MetricsBindAddress: "0",
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   leaderElectionID,
