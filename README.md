@@ -62,6 +62,10 @@ kubectl create -f deploy/kubernetes/snapshot-controller
 ```
 
 ### 2. Install VGS CRD
+
+```
+IMPORTANT: delete previous v1aplha2 version of CRD and vgs created using this crd.
+```
 If you want to install the VGS CRD from a pre-generated yaml, you can do so with the following command (run in top-level folder):
 ```
 kubectl apply -f config/crd/vgs-install.yaml
