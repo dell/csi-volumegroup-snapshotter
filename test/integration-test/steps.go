@@ -816,6 +816,7 @@ func (suite *FakeVGTestSuite) verify() error {
 
 				var err error
 				// "4d4a2e5a36080e0f-bab0f85900000002"
+				testLog.Info("found VG", " ID ", volGroup.Status.SnapshotGroupID)
 				if !regexp.MustCompile(`^([a-zA-Z0-9]*)-([a-zA-Z0-9]*)$`).MatchString(volGroup.Status.SnapshotGroupID) {
 					err = errors.New("unable to find VG Group ID")
 					testLog.Error(err, vg)
@@ -825,7 +826,7 @@ func (suite *FakeVGTestSuite) verify() error {
 				}
 				//2021-05-12 10:20:17 -0400 EDT
 				stime := volGroup.Status.CreationTime.String()
-				if !regexp.MustCompile(`\d{4}-\d{1,2}-\d{1,2} \d{2}:\d{2}:\d{2} -\d{4} EDT`).MatchString(stime) {
+				if !regexp.MustCompile(`\d{4}-\d{1,2}-\d{1,2} \d{2}:\d{2}:\d{2} -\d{4} E([SD])T`).MatchString(stime) {
 					err = errors.New("unable to match time ")
 					testLog.Error(err, volGroup.Status.CreationTime.String())
 					suite.addError(err)
