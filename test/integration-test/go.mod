@@ -4,7 +4,7 @@ module github.com/dell/csi-volumegroup-snapshotter/test/integration-test
 
 replace github.com/dell/csi-volumegroup-snapshotter => ../../
 
-//replace github.com/dell/vxflexos => /root/csi-powerflex
+//replace github.com/dell/vxflexos => ./csi-powerflex
 
 // replace github.com/dell/goscaleio => ./csi-vxflexos/goscaleio
 
