@@ -185,7 +185,13 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	sort.Strings(srcVolIDs)
 	// make grpc call to driver
 	otherParams := make(map[string]string)
-	otherParams[common.ExistingGroupID] = vg.Status.SnapshotGroupID
+	//remove systemID
+	gid := vg.Status.SnapshotGroupID
+	tokens := strings.Split(gid, "-")
+	index := len(tokens)
+	if index > 0 {
+		otherParams[common.ExistingGroupID] = tokens[index-1]
+	}
 	log.Info("VG Snapshotter vg create", "existing GroupID", otherParams[common.ExistingGroupID])
 	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIDs, otherParams)
 	if grpcErr != nil {
