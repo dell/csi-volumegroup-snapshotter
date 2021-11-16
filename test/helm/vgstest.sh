@@ -42,7 +42,7 @@ do
         vscr=$(kubectl get volumesnapshotcontent $i | grep true | wc -l)
         echo "vscr true=$vscr"
         if [[ $vscr > 0 ]]; then
-                let $vscReadyCount++
+                let vscReadyCount++
         fi
 done
 
