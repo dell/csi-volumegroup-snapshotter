@@ -161,7 +161,7 @@ func (suite *FakeVGTestSuite) iForceUpdateVGError(value string) error {
 }
 
 func (suite *FakeVGTestSuite) iForceUpdateVCError(value string) error {
-	testLog.Info("force VS update error")
+	testLog.Info("force VSC update error")
 	reconcileVgname = value[:13]
 	updateVcError = true
 	return nil
@@ -415,7 +415,7 @@ func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) erro
 				return errors.New("unable to create VolsnapContent")
 			}
 		} else if method == "Update" && updateVcError {
-			testLog.Info("ShouldFail", "force update vs error", v)
+			testLog.Info("ShouldFail", "force update vsc error", v)
 			return errors.New("unable to update VolsnapContent")
 		}
 	default:

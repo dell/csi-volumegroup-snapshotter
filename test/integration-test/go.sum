@@ -147,7 +147,7 @@ github.com/dell/csi-vxflexos/v2 v2.0.0-20211014194653-b2cf36dab234 h1:4kb/csabQS
 github.com/dell/csi-vxflexos/v2 v2.0.0-20211014194653-b2cf36dab234/go.mod h1:/MLx1HfSNwzG8XSO3aVk9SDJOvGwmkQtqLSEJULjhxY=
 github.com/dell/dell-csi-extensions/podmon v1.0.0 h1:QoxioaFfjIP6cJ4s166A1JhgxIXWe/H0A60edO6nf4E=
 github.com/dell/dell-csi-extensions/podmon v1.0.0/go.mod h1:Jjt+zHbLIZ3qJMug17WBYdz7wu90+hd65kgJwv8ZOec=
-github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.0.0-20211104171507-7c7d0b6e3d35/go.mod h1:5yDbA4Whm93zqgYSEdf2dgntm0JZLW60Eu7ABeZEhE4=
+github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.0.0-20211105191151-ab8304dcb6ad/go.mod h1:5yDbA4Whm93zqgYSEdf2dgntm0JZLW60Eu7ABeZEhE4=
 github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.2.0 h1:wksTZZatf8r4298AuncGMrLNdydFRsNTWcN0ckn8BJo=
 github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.2.0/go.mod h1:6foFItuBYCiVQ9wU8T6u/xIGpBGPpGI181f5gPcCsjo=
 github.com/dell/gocsi v1.3.1/go.mod h1:doJru1XfPHSmROXxtAey6eQ8QseoFKaMtA8YaWCb0mU=

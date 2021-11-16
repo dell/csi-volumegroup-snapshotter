@@ -129,6 +129,17 @@ func (suite *VGSControllerTestSuite) TestReconcileWithCreateError() {
 	createVSCError = false
 }
 
+func (suite *VGSControllerTestSuite) TestReconcileWithCreateVGError() {
+	suite.makeFakeVG(ctx, label, vgName, suite.mockUtils.Specs.Namespace, "Retain", nil)
+	suite.makeFakeVSC(ctx)
+	suite.makeFakePV(ctx, fakePvName1, srcVolID)
+	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
+	createVSCError = true
+	badName := vgName + "abcdegfhijklmnopqrstuvwxyz1234567890"
+	suite.runFakeVGManager(badName, suite.mockUtils.Specs.Namespace, "unable to create VolsnapContent")
+	createVSCError = false
+}
+
 // test a reconcile with broken Get
 func (suite *VGSControllerTestSuite) TestReconcileWithGetError() {
 	suite.makeFakeVG(ctx, label, vgName, suite.mockUtils.Specs.Namespace, "Retain", nil)
@@ -280,6 +291,10 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 			Name:      snapshotName,
 		}, snapshot)
 		assert.Equal(suite.T(), err, nil)
+
+		vgReconcile.ignoreUpdatePredicate()
+		vgReconcile.handleSnapCreate(snapshot)
+		vgReconcile.handleSnapUpdate(snapshot, snapshot)
 
 		contentName := *snapshot.Spec.Source.VolumeSnapshotContentName
 		content := new(s1.VolumeSnapshotContent)
@@ -666,7 +681,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 
 		vc := &s1.VolumeSnapshotContent{}
 		for _, c := range vcList.Items {
-			fmt.Printf("fake client found content  ReadyToUse %#v \n", *c.Status.ReadyToUse)
+			fmt.Printf("fake client found content  ReadyToUse %#v \n", c)
 			vc = &c
 		}
 		*vc.Spec.Source.SnapshotHandle = "badid"
