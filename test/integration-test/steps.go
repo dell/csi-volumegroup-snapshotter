@@ -19,6 +19,7 @@ import (
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
 	core_v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
@@ -559,6 +560,12 @@ func (suite *FakeVGTestSuite) runVGReconcile() error {
 func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiVolumeGroupSnapshotReconciler, req reconcile.Request) {
 	// make a Reconciler object with grpc client
 	// notice Client is set to fake client :the k8s mock
+
+	
+	// setup watcher clientset
+        // to mimic k8s environment
+        clientset := sfakeclient.NewSimpleClientset()
+
 	vgReconcile = &controller.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        suite.mockUtils.FakeClient,
 		Log:           logf.Log.WithName("vg-controller"),
@@ -566,6 +573,7 @@ func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiV
 		EventRecorder: fakeRecorder,
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
 		DriverName:    common.DriverName,
+		SnapClient:    clientset,
 	}
 
 	// make a request object to pass to Reconcile method in controller

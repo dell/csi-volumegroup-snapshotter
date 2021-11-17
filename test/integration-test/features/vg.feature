@@ -150,12 +150,12 @@ Scenario: Call Create VolumesGroupSnapshot response process hit error during upd
   Then The Error Message Should Contain "unable to update VG"
   And I Call Clean up Volumes On Array
 
-Scenario: Call Create VolumesGroupSnapshot response process hit error during update status for VolumeSnapshotContent
+Scenario: Call Create VolumesGroupSnapshot response process update VolumeSnapshotContent is not explictly called hence no error
   Given a Vgs Controller
   And I Call Create 2 Volumes "vg-vc2" "8"
   And I Force Update VC Error "response-update-error-vc"
   When I Call Test Create VG
-  Then The Error Message Should Contain "unable to update VolsnapContent"
+  Then There are No Errors
   And I Call Clean up Volumes On Array
 
 Scenario: Call Create VolumesGroupSnapshot response process hit error during create VolumeSnapshot

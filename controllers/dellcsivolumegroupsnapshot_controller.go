@@ -34,7 +34,6 @@ import (
 	"github.com/go-logr/logr"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	sclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
-	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
 	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -64,6 +63,7 @@ type DellCsiVolumeGroupSnapshotReconciler struct {
 	Scheme        *runtime.Scheme
 	EventRecorder record.EventRecorder
 	DriverName    string
+	SnapClient    sclient.Interface
 }
 
 //+kubebuilder:rbac:groups=volumegroup.storage.dell.com,resources=dellcsivolumegroupsnapshots,verbs=get;list;watch;create;update;patch;delete
@@ -308,7 +308,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 		// after create update status
 		if updateErr := r.updateVolumeSnapshotContentStatus(ctx, contentName, updateSnapIDForContent,
 			s, vg.Name, failedMap); updateErr != nil {
-			r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "snapshot content status failed %s", createErr.Error())
+			r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "snapshot content status failed %s", updateErr.Error())
 			snapErrors = append(snapErrors, updateErr)
 		}
 	}
@@ -331,7 +331,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 	if len(failedMap) > 0 {
 		log.Error(errors.New("VG Snapshotter Process Response"), "summary")
 		for k, v := range failedMap {
-			log.Info("VG error", k, v)
+			log.Info("VG error details", k, v)
 		}
 	}
 
@@ -343,12 +343,18 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 		ReadyToUse:      ok,
 		Status:          status,
 	}
+	// save status after processing VG response
+	if err := r.Status().Update(ctx, vg); err != nil {
+		log.Error(err, "VG Snapshotter vg created ok unable to update VG status while processing response")
+		r.EventRecorder.Eventf(vg, common.EventTypeWarning, common.EventReasonUpdated, "Failed vg create: %s error: %s", groupName, err.Error())
+		snapErrors = append(snapErrors, err)
+	}
 	if len(snapErrors) > 0 {
 		msg := " "
 		for _, e := range snapErrors {
 			msg += e.Error() + " "
 		}
-		return ctrl.Result{}, errors.New("VG Snapshotter Process Response failed" + msg)
+		return ctrl.Result{}, errors.New("VG Snapshotter Process Response failed " + msg)
 	}
 	return ctrl.Result{}, nil
 }
@@ -370,7 +376,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 				log.Info("VG check snap ReadyToUse", "ReadyToUse", "false")
 				return false, nil
 			}
-			log.Info("VG check snap ready woo hoo !", snapName, status)
+			log.Info("VG check snap ready", snapName, status)
 		} else {
 			log.Info("VG check snap", "not ready", snapName)
 			continue
@@ -476,7 +482,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) deleteVg(
 			log.Error(err, "VG Snapshotter failed updating after remove finalizer")
 			return err
 		}
-
 		log.Info("VG Snapshotter deleted", "vg name", vg.Name)
 	}
 
@@ -634,7 +639,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolsnapcontent(
 	var contentNameExists string
 	updateSnapIDForContent := false
 	var contentErr error
-	log.Info("VG Snapshotter", "volumesnapshotcontent count ", len(vcList.Items))
 	volumeSnapshotName := volsnap.Name
 	volumeSnapshotNamespace := volsnap.Namespace
 	for _, vc := range vcList.Items {
@@ -659,8 +663,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) validateExistingVolSnapcontent(
 	var contentErr error
 
 	if *vc.Spec.Source.SnapshotHandle != snapID {
-		log.Info("VG Snapshotter content exists", "handle ", *vc.Spec.Source.SnapshotHandle)
-		log.Info("VG Snapshotter content exists", "snapId ", snapID)
 		log.Info("VG Snapshotter vg created ok existing VolumeSnapshotContent Source.SnapshotHandle update needed")
 		updateSnapIDForContent = true
 	}
@@ -713,14 +715,14 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 		existVolumeSnapshotError = true
 	}
 
-	log.Info("VG Snapshotter volsnap debug", "existing VolumeSnapshotContent name", existingContentname)
+	log.Info("VG Snapshotter volsnap", "existing VolumeSnapshotContent name", existingContentname)
 	if volsnap.Status != nil {
 		if !*volsnap.Status.ReadyToUse {
 			snapErr = errors.New("VG Snapshotter vg created ok existing VolumeSnapshot Status.ReadyToUse")
 			log.Error(snapErr, "VG Snapshotter vg created ok existing VolumeSnapshot Status.ReadyToUse  error")
 			existVolumeSnapshotError = true
 		}
-		log.Info("VG Snapshotter volsnap debug", "BoundVolumeSnapshotcontent", volsnap.Status.BoundVolumeSnapshotContentName)
+		log.Info("VG Snapshotter volsnap", "BoundVolumeSnapshotcontent", volsnap.Status.BoundVolumeSnapshotContentName)
 
 		if *volsnap.Status.BoundVolumeSnapshotContentName != *existingContentname {
 			contentErr = errors.New("VG Snapshotter vg created ok VolumeSnapshot exists with BoundVolumeSnapshotContentName  different from VolumeSnapshotContentName")
@@ -732,8 +734,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 	}
 
 	if *vc.Spec.Source.SnapshotHandle != snapID {
-		log.Info("VG Snapshotter content exists", "handle ", *vc.Spec.Source.SnapshotHandle)
-		log.Info("VG Snapshotter content exists", "snapId ", snapID)
 		log.Info("VG Snapshotter vg created ok existing VolumeSnapshot refers to VolumeSnapshotContent with Source.SnapshotHandle mismatch procced to reuse")
 		// check if snapContent volid exists on array
 	}
@@ -816,7 +816,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromPvcName(ctx co
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromNs(ctx context.Context, ns string) ([]string, map[string]string, error) {
 	pvcList := &v1.PersistentVolumeClaimList{}
-	log.Info("VG Snapshotter find matching pvc under ns", "ns", ns)
+	log.Info("VG Snapshotter find matching pvc", "namespace", ns)
 
 	err := r.List(ctx, pvcList, &client.ListOptions{
 		Namespace: ns,
@@ -1004,20 +1004,16 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) ignoreUpdatePredicate() predicate
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapUpdate(oldObj interface{}, obj interface{}) {
-	snapshot, _ := oldObj.(*s1.VolumeSnapshot)
-	log.Info("VG Snapshotter watcher volumesnap update:", "old snapshot status", snapshot.Status)
 	nsnapshot, _ := obj.(*s1.VolumeSnapshot)
-	log.Info("VG Snapshotter watcher volumesnap update:", "new snapshot status", nsnapshot.Status)
 
 	// vgs-helm-test-1-pvol1
 	ctx := context.Background()
-	ns := snapshot.Namespace
+	ns := nsnapshot.Namespace
 	vgsName := nsnapshot.Labels[common.LabelSnapshotGroup]
 	namespacedName := t1.NamespacedName{
 		Name:      vgsName,
 		Namespace: ns,
 	}
-	log.Info("VG Snapshotter create snap watch", vgsName, nsnapshot.Name)
 	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	err := r.Get(ctx, namespacedName, vg)
 	if err == nil && nsnapshot.Status != nil {
@@ -1050,7 +1046,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapCreate(obj interface{})
 		return
 	}
 
-	log.Info("VG Snapshotter create watch:", "snapshot name", snapshot.Name)
 	ctx := context.Background()
 
 	snapName := snapshot.Name
@@ -1063,10 +1058,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapCreate(obj interface{})
 			Name:      vgsName,
 			Namespace: ns,
 		}
-		log.Info("VG Snapshotter create snap watch", vgsName, snapName)
 		vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 		err := r.Get(ctx, namespacedName, vg)
-		log.Info("VG Snapshotter handleSnapCreate", vg.Name, vg.Labels)
 		if err == nil {
 			// snap belongs to this vg check status
 			if snapshot.Status != nil && *snapshot.Status.BoundVolumeSnapshotContentName != "" {
@@ -1084,9 +1077,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 	var clientset sclient.Interface
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Error(err, "vg snapshotter setup snaWatch")
-		// running unit test
-		clientset = sfakeclient.NewSimpleClientset()
+		log.Info(err.Error(), "vg snapshotter setup snaWatch", "test mode")
+		clientset = r.SnapClient
 	} else {
 		clientset, err = sclient.NewForConfig(config)
 		if err != nil {
@@ -1098,7 +1090,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, 0)
 	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshots().Informer()
 	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		//AddFunc:    r.handleSnapCreate,
+		AddFunc:    r.handleSnapCreate,
 		UpdateFunc: r.handleSnapUpdate,
 	})
 	stop := make(chan struct{})
@@ -1109,11 +1101,10 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 
 	var clientset sclient.Interface
-
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		// running unit test
-		clientset = sfakeclient.NewSimpleClientset()
+		log.Info(err.Error(), "vg snapshotter setup snaWatch", "test mode")
+		clientset = r.SnapClient
 	} else {
 		clientset, err = sclient.NewForConfig(config)
 		if err != nil {

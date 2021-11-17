@@ -18,7 +18,6 @@ import (
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
-	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	core_v1 "k8s.io/api/core/v1"
@@ -26,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -240,23 +238,6 @@ func (suite *VGSControllerTestSuite) TestProvidingLabelAndList() {
 // Then verify that the object is deleted since all managing snapshots are deleted
 func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
-
-	// start content watcher
-	clientset := sfakeclient.NewSimpleClientset()
-
-	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Second))
-	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
-
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		DeleteFunc: vgReconcile.HandleSnapContentDelete,
-		AddFunc: func(obj interface{}) {
-			panic("error")
-		},
-	})
-
-	stop := make(chan struct{})
-	sharedInformerFactory.Start(stop)
-	// done watch
 
 	ns := suite.mockUtils.Specs.Namespace
 
@@ -597,6 +578,10 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 		Development: true,
 	}
 
+	// setup watcher clientset
+	// to mimic k8s environment
+	clientset := sfakeclient.NewSimpleClientset()
+
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	fakeRecorder := record.NewFakeRecorder(100)
@@ -609,6 +594,7 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 		Scheme:        common.Scheme,
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
 		DriverName:    common.DriverName,
+		SnapClient:    clientset,
 	}
 
 	// make a request object to pass to Reconcile method in controller
