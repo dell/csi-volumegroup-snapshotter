@@ -48,7 +48,9 @@ echo "Created these snapshots: "
 kubectl get volumesnapshots -n $NS
 echo ""
 
-numOfSnaps=$(kubectl get -n $NS volumesnapshots | grep "vgs-test-" | wc -l)
+numOfSnaps=$(kubectl get -n $NS volumesnapshots | grep "snap" | wc -l)
+echo "number of snaps $numOfSnaps found"
+
 if [ $numOfSnaps -eq 0 ]; then
 	echo "Test Failed: Groups were created but snaps were not.Check vg-snapshotter logs."
 	exit 2 
