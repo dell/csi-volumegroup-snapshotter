@@ -561,10 +561,9 @@ func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiV
 	// make a Reconciler object with grpc client
 	// notice Client is set to fake client :the k8s mock
 
-	
 	// setup watcher clientset
-        // to mimic k8s environment
-        clientset := sfakeclient.NewSimpleClientset()
+	// to mimic k8s environment
+	clientset := sfakeclient.NewSimpleClientset()
 
 	vgReconcile = &controller.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        suite.mockUtils.FakeClient,
