@@ -10,6 +10,5 @@ LABEL vendor="Dell Inc." \
 #COPY licenses /licenses
 
 RUN microdnf update -y && microdnf install -y tar gzip
-
 COPY ./bin/vg-snapshotter .
 ENTRYPOINT ["/vg-snapshotter"]

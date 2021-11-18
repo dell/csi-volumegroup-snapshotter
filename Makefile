@@ -29,7 +29,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 BUNDLE_IMG ?= controller-bundle:$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= vg-controller:v0.3.1
+IMG ?= vg-controller:v1.0.0
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 

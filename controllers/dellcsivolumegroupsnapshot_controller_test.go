@@ -18,7 +18,6 @@ import (
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
 	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
-	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	core_v1 "k8s.io/api/core/v1"
@@ -26,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -126,6 +124,17 @@ func (suite *VGSControllerTestSuite) TestReconcileWithCreateError() {
 	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
 	createVSCError = true
 	suite.runFakeVGManager(vgName, suite.mockUtils.Specs.Namespace, "unable to create VolsnapContent")
+	createVSCError = false
+}
+
+func (suite *VGSControllerTestSuite) TestReconcileWithCreateVGError() {
+	suite.makeFakeVG(ctx, label, vgName, suite.mockUtils.Specs.Namespace, "Retain", nil)
+	suite.makeFakeVSC(ctx)
+	suite.makeFakePV(ctx, fakePvName1, srcVolID)
+	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
+	createVSCError = true
+	badName := vgName + "abcdegfhijklmnopqrstuvwxyz1234567890"
+	suite.runFakeVGManager(badName, suite.mockUtils.Specs.Namespace, "unable to create VolsnapContent")
 	createVSCError = false
 }
 
@@ -230,23 +239,6 @@ func (suite *VGSControllerTestSuite) TestProvidingLabelAndList() {
 func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
 
-	// start content watcher
-	clientset := sfakeclient.NewSimpleClientset()
-
-	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Second))
-	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
-
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		DeleteFunc: vgReconcile.HandleSnapContentDelete,
-		AddFunc: func(obj interface{}) {
-			panic("error")
-		},
-	})
-
-	stop := make(chan struct{})
-	sharedInformerFactory.Start(stop)
-	// done watch
-
 	ns := suite.mockUtils.Specs.Namespace
 
 	suite.makeFakeVG(ctx, label, vgName, ns, "Retain", nil)
@@ -280,6 +272,10 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 			Name:      snapshotName,
 		}, snapshot)
 		assert.Equal(suite.T(), err, nil)
+
+		vgReconcile.ignoreUpdatePredicate()
+		vgReconcile.handleSnapCreate(snapshot)
+		vgReconcile.handleSnapUpdate(snapshot, snapshot)
 
 		contentName := *snapshot.Spec.Source.VolumeSnapshotContentName
 		content := new(s1.VolumeSnapshotContent)
@@ -582,6 +578,10 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 		Development: true,
 	}
 
+	// setup watcher clientset
+	// to mimic k8s environment
+	clientset := sfakeclient.NewSimpleClientset()
+
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	fakeRecorder := record.NewFakeRecorder(100)
@@ -594,6 +594,7 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 		Scheme:        common.Scheme,
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
 		DriverName:    common.DriverName,
+		SnapClient:    clientset,
 	}
 
 	// make a request object to pass to Reconcile method in controller
@@ -666,7 +667,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 
 		vc := &s1.VolumeSnapshotContent{}
 		for _, c := range vcList.Items {
-			fmt.Printf("fake client found content  ReadyToUse %#v \n", *c.Status.ReadyToUse)
+			fmt.Printf("fake client found content  ReadyToUse %#v \n", c)
 			vc = &c
 		}
 		*vc.Spec.Source.SnapshotHandle = "badid"
