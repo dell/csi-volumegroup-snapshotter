@@ -314,7 +314,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 	}
 
 	// note: external snapshotter updates volumesnapshot status fields
-	//wait till snapshot status is updated to done for all snapshots
+	// wait till snapshot status is updated to done for all snapshots
 
 	ok, err := r.checkSnapshotStatus(ctx, vg.Namespace, snaps)
 	status := common.EventStatusError
@@ -363,7 +363,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 	snaps := strings.Split(snapshots, ",")
 	for _, snapName := range snaps {
 		log.Info("VG check snaps", "name=", snapName)
-		//get snap
+		// get snap
 		snap := new(s1.VolumeSnapshot)
 		nameSpacedName := t1.NamespacedName{
 			Namespace: ns,
@@ -1077,7 +1077,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 	var clientset sclient.Interface
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Info(err.Error(), "vg snapshotter setup snaWatch", "test mode")
+		log.Info(err.Error(), "vg snapshotter setup snapWatch", "test mode")
 		clientset = r.SnapClient
 	} else {
 		clientset, err = sclient.NewForConfig(config)
@@ -1103,7 +1103,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 	var clientset sclient.Interface
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Info(err.Error(), "vg snapshotter setup snaWatch", "test mode")
+		log.Info(err.Error(), "vg snapshotter setup snapWatch", "test mode")
 		clientset = r.SnapClient
 	} else {
 		clientset, err = sclient.NewForConfig(config)
@@ -1126,7 +1126,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 	return nil
 }
 
-//HandleSnapContentDelete updates VG status based on changes to volumesnapshotcontent
+// HandleSnapContentDelete updates VG status based on changes to volumesnapshotcontent
 func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj interface{}) {
 
 	content, ok := obj.(*s1.VolumeSnapshotContent)
@@ -1192,7 +1192,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj inter
 
 			if snapshotsString == "" {
 				// All snapshotcontents have been deleted and we can delete the VG object
-				//r.EventRecorder.Eventf(vg, v1.EventTypeWarning, common.EventReasonUpdated, "All managing snapshot contents are deleted")
 
 				log.Info("VG Snapshotter watcher all snapshots under vg has been deleted. Deleting VG object")
 				if err = r.Delete(ctx, vg); err != nil {
