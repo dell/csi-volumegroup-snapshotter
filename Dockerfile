@@ -4,7 +4,7 @@ LABEL vendor="Dell Inc." \
       name="dellcsi-vg-snapshotter" \
       summary="CSI VG Snapshotter for Dell EMC Powerflex" \
       description="Dell Storage VolumeGroup Snapshot Controller for CSI" \
-      version="0.1.0" \
+      version="0.3.0" \
       license="Apache-2.0"
 
 #COPY licenses /licenses
