@@ -35,7 +35,6 @@ jobs:
           threshold: 80
           # test-folder should be accurate for all csi-drivers
           test-folder: "./controllers"
-          skip-list: "podmon/test/ssh"
   go_security_scan:
     name: Go security
     runs-on: ubuntu-latest
