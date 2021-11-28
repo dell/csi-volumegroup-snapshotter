@@ -306,7 +306,7 @@ func (suite *VGSControllerTestSuite) TestSetupManager() {
 	suite.makeFakeVSC(ctx)
 	suite.makeFakePV(ctx, fakePvName1, srcVolID)
 	suite.makeFakePVC(ctx, label, fakePvcName1, ns, fakePvName1)
-	suite.runFakeVGManagerSetup(vgName, "")
+	//suite.runFakeVGManagerSetup(vgName, "")
 }
 
 // test reconcile without a VG and error should be volumegroup not found
