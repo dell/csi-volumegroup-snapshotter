@@ -11,7 +11,6 @@ jobs:
         with:
           repository: 'dell/csi-volumegroup-snapshotter'
           path: 'csi-volumegroup-snapshotter'
-          # change these to your driver name
       - name: Run unit tests and check package coverage
         uses: dell/common-github-actions/go-code-tester@try-test-fix
         # set these three to appropriate values
