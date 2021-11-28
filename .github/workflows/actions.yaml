@@ -1,12 +1,9 @@
 name: Workflow
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
 jobs:
-  code-check:
-    name: Check Go formatting, linting, vetting
+  test:
+    name: Run Go unit tests and check package coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
