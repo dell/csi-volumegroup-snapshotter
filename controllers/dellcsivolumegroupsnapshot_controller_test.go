@@ -10,7 +10,6 @@ import (
 	"time"
 
 	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
-	//pkg_common "github.com/dell/csi-volumegroup-snapshotter/pkg/common"
 	connection "github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/server"
@@ -23,10 +22,8 @@ import (
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -611,36 +608,8 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 	return
 }
 
-func (suite *VGSControllerTestSuite) fakeConfig() *rest.Config {
-	return &rest.Config{
-		Host: "http://0.0.0.0:4771",
-		ContentConfig: rest.ContentConfig{
-			GroupVersion: &schema.GroupVersion{
-				Group:   "",
-				Version: "v1",
-			},
-			NegotiatedSerializer: scheme.Codecs,
-		},
-	}
-}
-
 func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expectedErr string) {
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
-
-	/*
-		cfg := suite.fakeConfig()
-		mgr, _ := ctrl.NewManager(cfg, ctrl.Options{
-			Scheme:             runtime.NewScheme(),
-			MetricsBindAddress: ":8080",
-			Port:               9443,
-			LeaderElection:     false,
-			LeaderElectionID:   pkg_common.DellCSIVolumegroup,
-		})
-
-		expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(time.Second, 5*time.Minute)
-
-		vgReconcile.SetupWithManager(mgr, expRateLimiter, 5)
-	*/
 
 	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
 	res, err := vgReconcile.Reconcile(context.Background(), req)
