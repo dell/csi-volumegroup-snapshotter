@@ -23,8 +23,10 @@ import (
 	core_v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -610,10 +612,24 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 	return
 }
 
+func (suite *VGSControllerTestSuite) fakeConfig() *rest.Config {
+	return &rest.Config{
+		Host: "https://localhost:4772",
+		ContentConfig: rest.ContentConfig{
+			GroupVersion: &schema.GroupVersion{
+				Group:   "",
+				Version: "v1",
+			},
+			NegotiatedSerializer: scheme.Codecs,
+		},
+	}
+}
+
 func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expectedErr string) {
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
 
-	mgr, _ := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	cfg := suite.fakeConfig()
+	mgr, _ := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:             runtime.NewScheme(),
 		MetricsBindAddress: ":8080",
 		Port:               9443,
