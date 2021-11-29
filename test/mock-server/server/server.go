@@ -119,6 +119,7 @@ func RunServer(stubsPath string) {
 	}
 
 	server := grpc.NewServer()
+	MockServer = server
 
 	csi_ext.RegisterVolumeGroupSnapshotServer(MockServer, &MockVolumeGroupSnapshotServer{})
 
@@ -131,7 +132,6 @@ func RunServer(stubsPath string) {
 			errChan <- err
 		}
 	}()
-	MockServer = server
 }
 
 //StopMockServer stop mock server gracefully
