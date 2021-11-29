@@ -118,7 +118,7 @@ func RunServer(stubsPath string) {
 		return
 	}
 
-	MockServer = grpc.NewServer()
+	server := grpc.NewServer()
 
 	csi_ext.RegisterVolumeGroupSnapshotServer(MockServer, &MockVolumeGroupSnapshotServer{})
 
@@ -127,10 +127,11 @@ func RunServer(stubsPath string) {
 
 	// run blocking call in a separate goroutine, report errors via channel
 	go func() {
-		if err := MockServer.Serve(lis); err != nil {
+		if err := server.Serve(lis); err != nil {
 			errChan <- err
 		}
 	}()
+	MockServer = server
 }
 
 //StopMockServer stop mock server gracefully
