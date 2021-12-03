@@ -5,7 +5,7 @@ replace github.com/dell/csi-volumegroup-snapshotter => ./
 go 1.16
 
 require (
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v0.0.0-20211105191151-ab8304dcb6ad
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.0.0
 	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v0.4.0
 	github.com/google/uuid v1.3.0

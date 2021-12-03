@@ -13,9 +13,9 @@ go 1.16
 require (
 	github.com/container-storage-interface/spec v1.5.0
 	github.com/cucumber/godog v0.12.2
-	github.com/dell/csi-volumegroup-snapshotter v0.3.0
-	github.com/dell/csi-vxflexos/v2 v2.0.0-20211014194653-b2cf36dab234
-	github.com/dell/gocsi v1.4.0
+	github.com/dell/csi-volumegroup-snapshotter v1.0.0
+	github.com/dell/csi-vxflexos/v2 v2.1.0
+	github.com/dell/gocsi v1.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	go.uber.org/zap v1.19.1
