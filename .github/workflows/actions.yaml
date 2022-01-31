@@ -21,14 +21,14 @@ jobs:
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
-      - name: Checkout csi-powerflex
+      - name: Checkout csi-volumegroup-snapshotter
         uses: actions/checkout@v2
         with:
           # change these to your driver name
-          repository: 'dell/csi-powerflex'
-          path: 'csi-powerflex'
+          repository: 'dell/csi-volumegroup-snapshotter'
+          path: 'csi-volumegroup-snapshotter'
       - name: Run unit tests and check package coverage
-        uses: dell/common-github-actions/go-code-tester@try-different-coverage-check
+        uses: dell/common-github-actions/go-code-tester@pflex-unit-test-no-race
         with:
           threshold: 90
           test-folder: "./controllers"
