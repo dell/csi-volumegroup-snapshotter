@@ -6,7 +6,7 @@ replace github.com/dell/gofsutil => ../../../gofsutil
 
 replace github.com/dell/csi-volumegroup-snapshotter => ../../
 
-replace github.com/dell/csi-vxflexos/v2 => ../../../csi-powerflex
+replace github.com/dell/csi-vxflexos/v2 => ./csi-powerflex
 
 // replace github.com/dell/goscaleio => ./csi-vxflexos/goscaleio
 
