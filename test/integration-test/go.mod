@@ -16,7 +16,6 @@ require (
 	github.com/container-storage-interface/spec v1.5.0
 	github.com/cucumber/godog v0.12.2
 	github.com/dell/csi-volumegroup-snapshotter v1.0.0
-	github.com/dell/gofsutil v1.7.0
 	github.com/dell/csi-vxflexos/v2 v2.1.0
 	github.com/dell/gocsi v1.5.0
 	github.com/golang/protobuf v1.5.2
