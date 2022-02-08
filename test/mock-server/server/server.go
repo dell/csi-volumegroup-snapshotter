@@ -48,7 +48,7 @@ type response struct {
 
 //FindStub post find request and returns the unmarshalled response
 func FindStub(service, method string, in, out interface{}) error {
-	url := "http://localhost:4773/find"
+	url := "http://localhost:5617/find"
 	pyl := payload{
 		Service: service,
 		Method:  method,
@@ -91,7 +91,7 @@ func RunServer(stubsPath string) {
 		csiAddress = "localhost:4772"
 		// relate path from stub.go to stubs dir
 		defaultStubsPath = "../stubs"
-		apiPort          = "4773"
+		apiPort          = "5617"
 	)
 
 	if len(stubsPath) == 0 {
