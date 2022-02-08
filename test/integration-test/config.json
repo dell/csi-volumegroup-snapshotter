@@ -1,19 +1,19 @@
 [
     {
         "username": "admin",
-        "password": "password",
-        "systemID": "ID1",
-        "endpoint": "https://127.0.0.1",
+        "password": "Password123",
+        "systemID": "4d4a2e5a36080e0f",
+        "endpoint": "https://10.247.38.47",
         "insecure": true,
         "isDefault": true,
-        "mdm": "10.0.0.1,10.0.0.2"
+        "mdm": "10.247.38.41,10.247.38.44"
     },
     {
         "username": "admin",
-        "password": "password",
-        "systemID": "ID2",
-        "endpoint": "https://127.0.0.2",
+        "password": "Password123",
+        "systemID": "1a99af710210af0f",
+        "endpoint": "https://10.247.13.206",
         "insecure": true,
-        "mdm": "10.0.0.1,10.0.0.2"
+        "mdm": "10.247.13.202,10.247.13.204"
     }
 ]

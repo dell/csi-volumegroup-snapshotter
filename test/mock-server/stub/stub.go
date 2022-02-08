@@ -43,7 +43,7 @@ const (
 	//DefaultAddress for test
 	DefaultAddress = "localhost"
 	//DefaultPort for test
-	DefaultPort = "4771"
+	DefaultPort = "4773"
 )
 
 //RunStubServer test server

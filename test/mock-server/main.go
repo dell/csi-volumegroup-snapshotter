@@ -13,7 +13,7 @@ var (
 func init() {
 	flag.StringVar(&csiAddress, "csi-address", "/var/run/csi.sock", "Address of the grpc server")
 	flag.StringVar(&stubs, "stubs", "./stubs", "Location of the stubs directory")
-	flag.StringVar(&apiPort, "apiPorts", "4771", "API port")
+	flag.StringVar(&apiPort, "apiPorts", "4773", "API port")
 	flag.Parse()
 }
 
