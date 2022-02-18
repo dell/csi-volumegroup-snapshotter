@@ -4,6 +4,8 @@ module github.com/dell/csi-volumegroup-snapshotter/test/integration-test
 
 replace github.com/dell/gofsutil => ./gofsutil
 
+//replace github.com/dell/gocsi => ./gocsi
+
 replace github.com/dell/csi-volumegroup-snapshotter => ../../
 
 replace github.com/dell/csi-vxflexos/v2 => ./csi-powerflex
@@ -21,7 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	go.uber.org/zap v1.19.1
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.43.0
 	k8s.io/api v0.22.3
 	k8s.io/apimachinery v0.22.3
 	k8s.io/client-go v0.22.3
