@@ -362,31 +362,33 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Context, ns string, snapshots string) (bool, error) {
 	snaps := strings.Split(snapshots, ",")
 	for _, snapName := range snaps {
-		log.Info("VG check snaps", "name=", snapName)
 		// get snap
+		if snapName == "" {
+			continue
+		}
 		snap := new(s1.VolumeSnapshot)
 		nameSpacedName := t1.NamespacedName{
 			Namespace: ns,
 			Name:      snapName,
 		}
-		_ = r.Get(ctx, nameSpacedName, snap)
+		err := r.Get(ctx, nameSpacedName, snap)
+		if err != nil {
+			log.Error(err, "VG check snap get failed")
+			return false, err
+		}
 		if snap.Name != "" && snap.Status != nil {
 			status := *snap.Status.ReadyToUse
-			if !status {
-				log.Info("VG check snap ReadyToUse", "ReadyToUse", "false")
+			if !status || *snap.Status.BoundVolumeSnapshotContentName == "" {
+				log.Info("VG check snap", "ReadyToUse", "false")
 				return false, nil
 			}
-			log.Info("VG check snap ready", snapName, status)
-		} else {
-			log.Info("VG check snap", "not ready", snapName)
-			continue
 		}
 	}
 	return true, nil
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string) (bool, error) {
-	timeout := time.After(10 * time.Second)
+	timeout := time.After(1000 * time.Second)
 	ticker := time.Tick(500 * time.Millisecond)
 	// Keep trying until we're timed out or get a result/error
 	for {
@@ -402,7 +404,9 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.C
 				// We may return, or ignore the error
 				return false, err
 				// checkReadyToUse() done! let's return
-			} else if ok {
+			}
+			if ok {
+				log.Info("VG check found all snaps ready")
 				return true, nil
 			}
 			// checkReadyToUse() isn't done yet, but it didn't fail either, let's try again

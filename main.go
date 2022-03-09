@@ -68,7 +68,7 @@ func main() {
 	flag.IntVar(&workerThreads, "worker-threads", 2, "Number of concurrent reconcilers for each of the controllers")
 	flag.DurationVar(&retryIntervalStart, "retry-interval-start", time.Second, "Initial retry interval of failed reconcile request. It doubles with each failure, upto retry-interval-max")
 	flag.DurationVar(&retryIntervalMax, "retry-interval-max", 5*time.Minute, "Maximum retry interval of failed reconcile request")
-	flag.DurationVar(&csiOperationTimeout, "timeout", 10*time.Second, "Timeout of waiting for response for CSI Driver")
+	flag.DurationVar(&csiOperationTimeout, "timeout", 100000*time.Second, "Timeout of waiting for response for CSI Driver")
 	//flag.StringVar(&vgContextKeyPrefix, "context-prefix", "", "All the volume-group-attribute-keys with this prefix are added as annotation to the DellCSIVolumeGroup")
 	flag.Parse()
 
@@ -119,7 +119,7 @@ func main() {
 	if err = (&controllers.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        mgr.GetClient(),
 		Log:           ctrl.Log.WithName("controllers").WithName("DellCsiVolumeGroupSnapshot"),
-		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), csiOperationTimeout),
+		VGClient:      csiclientconn,
 		EventRecorder: mgr.GetEventRecorderFor(common.DellCSIVolumegroup),
 		DriverName:    driverName,
 		Scheme:        mgr.GetScheme(),
