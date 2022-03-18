@@ -2,7 +2,7 @@ module github.com/dell/csi-volumegroup-snapshotter/test/integration-test
 
 //replace github.com/dell/dell-csi-extensions/volumeGroupSnapshot => ../../dell-csi-extensions/volumeGroupSnapshot
 
-replace github.com/dell/gofsutil => ./gofsutil
+//replace github.com/dell/gofsutil => ./gofsutil
 
 //replace github.com/dell/gocsi => ./gocsi
 
@@ -19,7 +19,7 @@ require (
 	github.com/cucumber/godog v0.12.2
 	github.com/dell/csi-volumegroup-snapshotter v1.0.0
 	github.com/dell/csi-vxflexos/v2 v2.2.0
-	github.com/dell/gocsi v1.5.0
+	github.com/dell/gocsi v1.5.1
 	github.com/golang/protobuf v1.5.2
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0
 	go.uber.org/zap v1.19.1
