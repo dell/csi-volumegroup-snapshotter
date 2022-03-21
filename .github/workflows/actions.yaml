@@ -25,6 +25,17 @@ jobs:
         uses: securego/gosec@master
         with:
           args: -exclude-dir test ./...
+  test:
+    name: Run Go unit tests and check package coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout csi-volumegroup-snapshotter
+        uses: actions/checkout@v2
+      - name: Run unit tests and check package coverage
+        uses: dell/common-github-actions/go-code-tester@add-specify-pkgs
+        with:
+          threshold: 80
+          package-list: "github.com/dell/csi-volumegroup-snapshotter/controllers"
   malware_security_scan:
     name: Malware Scanner
     runs-on: ubuntu-latest
