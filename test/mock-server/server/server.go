@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/stub"
+	commonext "github.com/dell/dell-csi-extensions/common"
 	csi_ext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"google.golang.org/grpc"
 )
@@ -22,8 +23,8 @@ type MockVolumeGroupSnapshotServer struct{}
 var MockServer *grpc.Server
 
 //ProbeController grpc call to get driver information
-func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csi_ext.ProbeControllerRequest) (*csi_ext.ProbeControllerResponse, error) {
-	out := &csi_ext.ProbeControllerResponse{}
+func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *commonext.ProbeControllerRequest) (*commonext.ProbeControllerResponse, error) {
+	out := &commonext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
@@ -32,6 +33,12 @@ func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, i
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
+	return out, err
+}
+
+func (vgs *MockVolumeGroupSnapshotServer) ParseVolumeHandle(ctx context.Context, in *csi_ext.VolumeHandleRequest) (*csi_ext.VolumeHandleResponse, error) {
+	out := &csi_ext.VolumeHandleResponse{}
+	err := FindStub("VolumeGroupSnapshot", "ParseVolumeHandle", in, out)
 	return out, err
 }
 

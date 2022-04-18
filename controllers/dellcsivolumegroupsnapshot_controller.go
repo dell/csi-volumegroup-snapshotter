@@ -284,6 +284,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 
 		// make a VolumeSnapshot
 		pvcName := volIDPvcNameMap[s.SourceId]
+
 		// var volumeSnapshotName string
 		if s.Name != "" {
 			volumeSnapshotName = s.Name + "-" + pvcName
@@ -848,8 +849,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			log.Error(err, "VG Snapshotter vg create failed, unable to find pv for pvc")
 			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, unable to find pv for %s", pvName)
 		}
-		srcVolID := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
 
+		srcVolID := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
 		// check pvc and pv status
 		if pvc.Status.Phase != v1.ClaimBound || pv.Status.Phase != v1.VolumeBound {
 			statusErr := fmt.Errorf("pvc/pv %s does not have expected status phase : %s", srcVolID, pvc.Status.Phase)
@@ -858,11 +859,16 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			continue
 		}
 
+		parsedVolHandle, grpcErr := r.VGClient.ParseVolumeHandle(srcVolID)
+		if grpcErr != nil {
+			log.Error(err, "VG Snapshotter vg create failed, unable to parse volume handle")
+			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, unable to parse volume handle")
+		}
 		if k == 0 {
-			systemID = strings.Split(srcVolID, "-")[0]
+			systemID = parsedVolHandle.ArrayID
 			log.Info("VG Snapshotter found systemID", "systemID", systemID)
 		}
-		currentsystemID := strings.Split(srcVolID, "-")[0]
+		currentsystemID := parsedVolHandle.ArrayID
 		if systemID == currentsystemID {
 			srcVolIDs = append(srcVolIDs, srcVolID)
 		} else {

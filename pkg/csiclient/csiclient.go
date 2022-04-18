@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	commonext "github.com/dell/dell-csi-extensions/common"
 	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"github.com/go-logr/logr"
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ type VolumeGroupSnapshot interface {
 	CreateVolumeGroupSnapshot(string, []string, map[string]string) (*csiext.CreateVolumeGroupSnapshotResponse, error)
 	ProbeController() (string, error)
 	ProbeDriver() (string, error)
+	ParseVolumeHandle(string) (*csiext.VolumeHandleResponse, error)
 }
 
 //VolumeGroupSnapshotClient vg controller
@@ -60,7 +62,7 @@ func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 
 	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
 
-	response, err := client.ProbeController(ctx, &csiext.ProbeControllerRequest{})
+	response, err := client.ProbeController(ctx, &commonext.ProbeControllerRequest{})
 	if err != nil {
 		return "", err
 	}
@@ -88,4 +90,15 @@ func (v *VolumeGroupSnapshotClient) ProbeDriver() (string, error) {
 		}
 		time.Sleep(time.Second)
 	}
+}
+
+func (v *VolumeGroupSnapshotClient) ParseVolumeHandle(volumeHandle string) (*csiext.VolumeHandleResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
+	defer cancel()
+
+	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
+	req := csiext.VolumeHandleRequest{
+		VolumeHandle: volumeHandle,
+	}
+	return client.ParseVolumeHandle(ctx, &req)
 }

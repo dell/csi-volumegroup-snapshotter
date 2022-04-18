@@ -1,0 +1,16 @@
+{
+    "service": "VolumeGroupSnapshot",
+    "method": "ParseVolumeHandle",
+    "input": {
+        "contains": {
+            "VolumeHandle": "12345/abc/scsi"
+        }
+    },
+    "output": {
+        "data": {
+            "ArrayID": "abc",
+            "Protocol": "scsi",
+            "VolumeID": "12345"
+        }
+    }
+}
