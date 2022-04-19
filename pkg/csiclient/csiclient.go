@@ -92,6 +92,7 @@ func (v *VolumeGroupSnapshotClient) ProbeDriver() (string, error) {
 	}
 }
 
+// ParseVolumeHandle Parses volume handle for different drivers
 func (v *VolumeGroupSnapshotClient) ParseVolumeHandle(volumeHandle string) (*csiext.VolumeHandleResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
 	defer cancel()

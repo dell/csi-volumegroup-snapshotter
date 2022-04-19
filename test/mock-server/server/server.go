@@ -29,13 +29,14 @@ func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, i
 	return out, err
 }
 
-//CreateVolumeGroupSnapshot creete vgs
+//CreateVolumeGroupSnapshot Creates vgs
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
 	return out, err
 }
 
+// ParseVolumeHandle Parses volume handle for different drivers
 func (vgs *MockVolumeGroupSnapshotServer) ParseVolumeHandle(ctx context.Context, in *csi_ext.VolumeHandleRequest) (*csi_ext.VolumeHandleResponse, error) {
 	out := &csi_ext.VolumeHandleResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ParseVolumeHandle", in, out)
