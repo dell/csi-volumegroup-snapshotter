@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	commonext "github.com/dell/dell-csi-extensions/common"
 	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"github.com/go-logr/logr"
 	"google.golang.org/grpc"
@@ -61,7 +60,7 @@ func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 
 	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
 
-	response, err := client.ProbeController(ctx, &commonext.ProbeControllerRequest{})
+	response, err := client.ProbeController(ctx, &csiext.ProbeControllerRequest{})
 	if err != nil {
 		return "", err
 	}

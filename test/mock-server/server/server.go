@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/stub"
-	commonext "github.com/dell/dell-csi-extensions/common"
 	csi_ext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"google.golang.org/grpc"
 )
@@ -23,8 +22,8 @@ type MockVolumeGroupSnapshotServer struct{}
 var MockServer *grpc.Server
 
 //ProbeController grpc call to get driver information
-func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *commonext.ProbeControllerRequest) (*commonext.ProbeControllerResponse, error) {
-	out := &commonext.ProbeControllerResponse{}
+func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csi_ext.ProbeControllerRequest) (*csi_ext.ProbeControllerResponse, error) {
+	out := &csi_ext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
