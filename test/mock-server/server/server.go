@@ -36,13 +36,6 @@ func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.
 	return out, err
 }
 
-// ParseVolumeHandle Parses volume handle for different drivers
-func (vgs *MockVolumeGroupSnapshotServer) ParseVolumeHandle(ctx context.Context, in *csi_ext.VolumeHandleRequest) (*csi_ext.VolumeHandleResponse, error) {
-	out := &csi_ext.VolumeHandleResponse{}
-	err := FindStub("VolumeGroupSnapshot", "ParseVolumeHandle", in, out)
-	return out, err
-}
-
 type payload struct {
 	Service string      `json:"service"`
 	Method  string      `json:"method"`

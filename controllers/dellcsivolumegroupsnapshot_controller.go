@@ -55,6 +55,8 @@ import (
 
 var log logr.Logger
 
+const driverTypePowerstore = "csi-powerstore.dellemc.com"
+
 // DellCsiVolumeGroupSnapshotReconciler reconciles a DellCsiVolumeGroupSnapshot object
 type DellCsiVolumeGroupSnapshotReconciler struct {
 	client.Client
@@ -859,16 +861,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			continue
 		}
 
-		parsedVolHandle, grpcErr := r.VGClient.ParseVolumeHandle(srcVolID)
-		if grpcErr != nil {
-			log.Error(err, "VG Snapshotter vg create failed, unable to parse volume handle")
-			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, unable to parse volume handle")
-		}
+		_, arrayID := parseVolumeHandle(pv.Spec.PersistentVolumeSource.CSI.Driver, srcVolID)
 		if k == 0 {
-			systemID = parsedVolHandle.ArrayID
+			systemID = arrayID
 			log.Info("VG Snapshotter found systemID", "systemID", systemID)
 		}
-		currentsystemID := parsedVolHandle.ArrayID
+		currentsystemID := arrayID
 		if systemID == currentsystemID {
 			srcVolIDs = append(srcVolIDs, srcVolID)
 		} else {
@@ -1233,4 +1231,19 @@ func containString(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// parseVolumeHandle parses the driver specific volume handles and returns array id and volume id
+func parseVolumeHandle(driverType string, volumeHandle string) (volumeID, arrayID string) {
+	switch driverType {
+	case driverTypePowerstore:
+		volHandle := strings.Split(volumeHandle, "/")
+		volumeID = volHandle[0]
+		arrayID = volHandle[1]
+	default:
+		volHandle := strings.Split(volumeHandle, "-")
+		volumeID = volHandle[1]
+		arrayID = volHandle[0]
+	}
+	return volumeID, arrayID
 }

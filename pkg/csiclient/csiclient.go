@@ -18,7 +18,6 @@ type VolumeGroupSnapshot interface {
 	CreateVolumeGroupSnapshot(string, []string, map[string]string) (*csiext.CreateVolumeGroupSnapshotResponse, error)
 	ProbeController() (string, error)
 	ProbeDriver() (string, error)
-	ParseVolumeHandle(string) (*csiext.VolumeHandleResponse, error)
 }
 
 //VolumeGroupSnapshotClient vg controller
@@ -90,16 +89,4 @@ func (v *VolumeGroupSnapshotClient) ProbeDriver() (string, error) {
 		}
 		time.Sleep(time.Second)
 	}
-}
-
-// ParseVolumeHandle Parses volume handle for different drivers
-func (v *VolumeGroupSnapshotClient) ParseVolumeHandle(volumeHandle string) (*csiext.VolumeHandleResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
-	defer cancel()
-
-	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
-	req := csiext.VolumeHandleRequest{
-		VolumeHandle: volumeHandle,
-	}
-	return client.ParseVolumeHandle(ctx, &req)
 }
