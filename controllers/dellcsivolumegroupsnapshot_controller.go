@@ -1243,7 +1243,7 @@ func parseVolumeHandle(driverType string, volumeHandle string) (arrayID string) 
 		}
 	default:
 		volHandle := strings.Split(volumeHandle, "-")
-		if len(volHandle) >= 2 {
+		if len(volHandle) >= 1 {
 			arrayID = volHandle[0]
 		}
 	}
