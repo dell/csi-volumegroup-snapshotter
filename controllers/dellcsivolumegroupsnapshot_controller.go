@@ -861,7 +861,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			continue
 		}
 
-		_, arrayID := parseVolumeHandle(pv.Spec.PersistentVolumeSource.CSI.Driver, srcVolID)
+		arrayID := parseVolumeHandle(pv.Spec.PersistentVolumeSource.CSI.Driver, srcVolID)
 		if k == 0 {
 			systemID = arrayID
 			log.Info("VG Snapshotter found systemID", "systemID", systemID)
@@ -1234,16 +1234,18 @@ func containString(slice []string, s string) bool {
 }
 
 // parseVolumeHandle parses the driver specific volume handles and returns array id and volume id
-func parseVolumeHandle(driverType string, volumeHandle string) (volumeID, arrayID string) {
+func parseVolumeHandle(driverType string, volumeHandle string) (arrayID string) {
 	switch driverType {
 	case driverTypePowerstore:
 		volHandle := strings.Split(volumeHandle, "/")
-		volumeID = volHandle[0]
-		arrayID = volHandle[1]
+		if len(volHandle) >= 2 {
+			arrayID = volHandle[1]
+		}
 	default:
 		volHandle := strings.Split(volumeHandle, "-")
-		volumeID = volHandle[1]
-		arrayID = volHandle[0]
+		if len(volHandle) >= 2 {
+			arrayID = volHandle[0]
+		}
 	}
-	return volumeID, arrayID
+	return arrayID
 }
