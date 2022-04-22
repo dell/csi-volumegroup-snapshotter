@@ -1,8 +1,8 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
-go 1.16
-
 replace github.com/dell/csi-volumegroup-snapshotter => ./
+
+go 1.16
 
 require (
 	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.0.0

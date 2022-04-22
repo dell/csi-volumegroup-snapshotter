@@ -28,7 +28,7 @@ func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, i
 	return out, err
 }
 
-//CreateVolumeGroupSnapshot Creates vgs
+//CreateVolumeGroupSnapshot creete vgs
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
