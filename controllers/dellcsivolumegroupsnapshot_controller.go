@@ -55,6 +55,8 @@ import (
 
 var log logr.Logger
 
+const driverTypePowerstore = "csi-powerstore.dellemc.com"
+
 // DellCsiVolumeGroupSnapshotReconciler reconciles a DellCsiVolumeGroupSnapshot object
 type DellCsiVolumeGroupSnapshotReconciler struct {
 	client.Client
@@ -284,6 +286,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 
 		// make a VolumeSnapshot
 		pvcName := volIDPvcNameMap[s.SourceId]
+
 		// var volumeSnapshotName string
 		if s.Name != "" {
 			volumeSnapshotName = s.Name + "-" + pvcName
@@ -848,8 +851,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			log.Error(err, "VG Snapshotter vg create failed, unable to find pv for pvc")
 			return nil, nil, fmt.Errorf("VG Snapshotter vg create failed, unable to find pv for %s", pvName)
 		}
-		srcVolID := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
 
+		srcVolID := pv.Spec.PersistentVolumeSource.CSI.VolumeHandle
 		// check pvc and pv status
 		if pvc.Status.Phase != v1.ClaimBound || pv.Status.Phase != v1.VolumeBound {
 			statusErr := fmt.Errorf("pvc/pv %s does not have expected status phase : %s", srcVolID, pvc.Status.Phase)
@@ -858,11 +861,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) mapVolIDToPvcName(ctx context.Con
 			continue
 		}
 
+		arrayID := parseVolumeHandle(pv.Spec.PersistentVolumeSource.CSI.Driver, srcVolID)
 		if k == 0 {
-			systemID = strings.Split(srcVolID, "-")[0]
+			systemID = arrayID
 			log.Info("VG Snapshotter found systemID", "systemID", systemID)
 		}
-		currentsystemID := strings.Split(srcVolID, "-")[0]
+		currentsystemID := arrayID
 		if systemID == currentsystemID {
 			srcVolIDs = append(srcVolIDs, srcVolID)
 		} else {
@@ -1227,4 +1231,21 @@ func containString(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+// parseVolumeHandle parses the driver specific volume handles and returns array id and volume id
+func parseVolumeHandle(driverType string, volumeHandle string) (arrayID string) {
+	switch driverType {
+	case driverTypePowerstore:
+		volHandle := strings.Split(volumeHandle, "/")
+		if len(volHandle) >= 2 {
+			arrayID = volHandle[1]
+		}
+	default:
+		volHandle := strings.Split(volumeHandle, "-")
+		if len(volHandle) >= 1 {
+			arrayID = volHandle[0]
+		}
+	}
+	return arrayID
 }
