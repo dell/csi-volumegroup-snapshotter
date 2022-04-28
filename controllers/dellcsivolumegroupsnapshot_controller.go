@@ -118,6 +118,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 		return ctrl.Result{}, nil
 	}
 
+	if vg.Status.Status == common.EventStatusPending {
+		log.Info("VG Snapshotter reconcile found vg exists in pending state", "groupID", vg.Status.SnapshotGroupID)
+		log.Info("VG Snapshotter reconcile found vg exists in pending state", "members list", vg.Status.Snapshots)
+		return ctrl.Result{}, fmt.Errorf("VG Snapshotter status is pending. Avoid creation of another snapshot")
+	}
+
 	// set vg status to pending
 	vg.Status.Status = common.EventStatusPending
 	if err := r.Status().Update(ctx, vg); err != nil {
@@ -430,7 +436,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 	if err := r.Get(ctx, nameSpacedName, vs); err != nil {
 		log.Error(err, "VG Snapshotter vg created ok  get VolumeSnapshot error")
 		r.EventRecorder.Eventf(vs, common.EventTypeWarning, common.EventReasonUpdated, "Failed to get newly created VolumeSnapshot %s in vg %s. error : %s", volumeSnapshotName, vgName, err.Error())
-		failedMap[volumeSnapshotName] = fmt.Sprintf("VG Snapshotter vg created ok unable to get newly created VolumeSnapshot %s in %s", volumeSnapshotName, vgName)
 	} else {
 		vs.Status = &s1.VolumeSnapshotStatus{
 			BoundVolumeSnapshotContentName: &contentName,
