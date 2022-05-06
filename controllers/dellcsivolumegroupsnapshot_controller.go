@@ -396,7 +396,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string) (bool, error) {
 	// increase timeout to 5 minutes due to intermittent errors from external snapshotter
-	timeout := time.After(600 * time.Second)
+	timeout := time.After(300 * time.Second)
 	ticker := time.Tick(500 * time.Millisecond)
 	// Keep trying until we're timed out or get a result/error
 	for {
