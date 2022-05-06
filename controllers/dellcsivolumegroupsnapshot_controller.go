@@ -395,7 +395,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string) (bool, error) {
-	timeout := time.After(10 * time.Second)
+	// increase timeout to 5 minutes due to intermittent errors from external snapshotter
+	timeout := time.After(600 * time.Second)
 	ticker := time.Tick(500 * time.Millisecond)
 	// Keep trying until we're timed out or get a result/error
 	for {
@@ -435,7 +436,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 
 	if err := r.Get(ctx, nameSpacedName, vs); err != nil {
 		log.Error(err, "VG Snapshotter vg created ok  get VolumeSnapshot error")
-		r.EventRecorder.Eventf(vs, common.EventTypeWarning, common.EventReasonUpdated, "Failed to get newly created VolumeSnapshot %s in vg %s. error : %s", volumeSnapshotName, vgName, err.Error())
+		// intermittent error from get volumesnapshot ignored. eventually there is no error and bind succeeds.
+		r.EventRecorder.Eventf(vs, common.EventTypeWarning, common.EventReasonUpdated, "Pending bind VolumeSnapshot %s in vg %s", volumeSnapshotName, vgName)
 	} else {
 		vs.Status = &s1.VolumeSnapshotStatus{
 			BoundVolumeSnapshotContentName: &contentName,
