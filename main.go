@@ -116,6 +116,11 @@ func main() {
 	}
 
 	expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(retryIntervalStart, retryIntervalMax)
+	schemaErr := s1.AddToScheme(mgr.GetScheme())
+	if schemaErr != nil {
+		setupLog.Error(schemaErr, "problem running manager")
+		os.Exit(1)
+	}
 	if err = (&controllers.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        mgr.GetClient(),
 		Log:           ctrl.Log.WithName("controllers").WithName("DellCsiVolumeGroupSnapshot"),

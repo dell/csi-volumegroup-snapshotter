@@ -22,8 +22,6 @@ It uses the `dell-csi-extensions` API, implemented by Dell EMC CSI drivers, to m
 
 For documentation, please visit [Container Storage Modules documentation](https://dell.github.io/csm-docs/).
 
-CSI Volume Group Snapshotter is currently in a Technical Preview Phase, and should be considered pre-release software. We are actively seeking feedback from users about its features. Please provide feedback using . We will take that input, along with results from our own extensive testing, and incrementally improve the software. We do not recommend or support it for production use at this time.
-
 ## Supported CSI Drivers
 Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots for PowerFlex array. 
 Additional array support in CSM Volume Group Snapshotter is planned for the near future.
