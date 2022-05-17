@@ -568,7 +568,7 @@ func (suite *FakeVGTestSuite) makeReconciler() (vgReconcile *controller.DellCsiV
 	vgReconcile = &controller.DellCsiVolumeGroupSnapshotReconciler{
 		Client:        suite.mockUtils.FakeClient,
 		Log:           logf.Log.WithName("vg-controller"),
-		Scheme:        common.Scheme,
+		Scheme:        scheme.Scheme,
 		EventRecorder: fakeRecorder,
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
 		DriverName:    common.DriverName,

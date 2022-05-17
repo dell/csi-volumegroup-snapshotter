@@ -591,7 +591,7 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 		Client:        suite.mockUtils.FakeClient,
 		Log:           ctrl.Log.WithName("controllers").WithName("unit-test"),
 		EventRecorder: fakeRecorder,
-		Scheme:        common.Scheme,
+		Scheme:        scheme.Scheme,
 		VGClient:      csiclient.New(csiConn, ctrl.Log.WithName("volumegroup-client"), 100*time.Second),
 		DriverName:    common.DriverName,
 		SnapClient:    clientset,
