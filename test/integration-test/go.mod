@@ -2,7 +2,7 @@ module github.com/dell/csi-volumegroup-snapshotter/test/integration-test
 
 //replace github.com/dell/dell-csi-extensions/volumeGroupSnapshot => ../../dell-csi-extensions/volumeGroupSnapshot
 
-//replace github.com/dell/gofsutil => ./gofsutil
+replace github.com/dell/gofsutil => ./gofsutil
 
 //replace github.com/dell/gocsi => ./gocsi
 
