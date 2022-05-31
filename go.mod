@@ -1,11 +1,10 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
-replace github.com/dell/csi-volumegroup-snapshotter => ./
-
 go 1.18
 
 require (
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.0.0
+	github.com/dell/dell-csi-extensions/common v1.0.0
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.1.1-0.20220526070836-43b4ac597bf3
 	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v0.4.0
 	github.com/google/uuid v1.3.0

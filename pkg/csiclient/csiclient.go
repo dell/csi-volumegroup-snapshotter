@@ -7,14 +7,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
+	csiext "github.com/dell/dell-csi-extensions/common"
+	vgsext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"github.com/go-logr/logr"
 	"google.golang.org/grpc"
 )
 
 //VolumeGroupSnapshot grpc calls to driver
 type VolumeGroupSnapshot interface {
-	CreateVolumeGroupSnapshot(string, []string, map[string]string) (*csiext.CreateVolumeGroupSnapshotResponse, error)
+	CreateVolumeGroupSnapshot(string, []string, map[string]string) (*vgsext.CreateVolumeGroupSnapshotResponse, error)
 	ProbeController() (string, error)
 	ProbeDriver() (string, error)
 }
@@ -37,13 +38,13 @@ func New(conn *grpc.ClientConn, log logr.Logger, timeout time.Duration) *VolumeG
 
 //CreateVolumeGroupSnapshot grpc call to driver
 func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, volIds []string,
-	params map[string]string) (*csiext.CreateVolumeGroupSnapshotResponse, error) {
+	params map[string]string) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
 	defer cancel()
 
-	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
+	client := vgsext.NewVolumeGroupSnapshotClient(v.conn)
 
-	req := &csiext.CreateVolumeGroupSnapshotRequest{
+	req := &vgsext.CreateVolumeGroupSnapshotRequest{
 		SourceVolumeIDs: volIds,
 		Name:            vgName,
 		Parameters:      params,
@@ -58,7 +59,7 @@ func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
 	defer cancel()
 
-	client := csiext.NewVolumeGroupSnapshotClient(v.conn)
+	client := vgsext.NewVolumeGroupSnapshotClient(v.conn)
 
 	response, err := client.ProbeController(ctx, &csiext.ProbeControllerRequest{})
 	if err != nil {

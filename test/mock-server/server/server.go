@@ -11,7 +11,8 @@ import (
 	"strings"
 
 	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/stub"
-	csi_ext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
+	csiext "github.com/dell/dell-csi-extensions/common"
+	vgsext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
 	"google.golang.org/grpc"
 )
 
@@ -22,15 +23,15 @@ type MockVolumeGroupSnapshotServer struct{}
 var MockServer *grpc.Server
 
 //ProbeController grpc call to get driver information
-func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csi_ext.ProbeControllerRequest) (*csi_ext.ProbeControllerResponse, error) {
-	out := &csi_ext.ProbeControllerResponse{}
+func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csiext.ProbeControllerRequest) (*csiext.ProbeControllerResponse, error) {
+	out := &csiext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
 
 //CreateVolumeGroupSnapshot creete vgs
-func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *csi_ext.CreateVolumeGroupSnapshotRequest) (*csi_ext.CreateVolumeGroupSnapshotResponse, error) {
-	out := &csi_ext.CreateVolumeGroupSnapshotResponse{}
+func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *vgsext.CreateVolumeGroupSnapshotRequest) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
+	out := &vgsext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
 	return out, err
 }
@@ -120,7 +121,7 @@ func RunServer(stubsPath string) {
 
 	MockServer = grpc.NewServer()
 
-	csi_ext.RegisterVolumeGroupSnapshotServer(MockServer, &MockVolumeGroupSnapshotServer{})
+	vgsext.RegisterVolumeGroupSnapshotServer(MockServer, &MockVolumeGroupSnapshotServer{})
 
 	fmt.Printf("Serving gRPC on %s\n", csiAddress)
 	errChan := make(chan error)
