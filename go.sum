@@ -104,10 +104,10 @@ github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dell/dell-csi-extensions/common v1.0.0 h1:1xANuTl8hFN6MosdW6uAwfYsRBbEBV6hz+MWOXoHbE8=
-github.com/dell/dell-csi-extensions/common v1.0.0/go.mod h1:HCs4rWiZJ1hcwfhCsr5sBsi+/5E8zuBZ+VG7qwiHOsU=
-github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.1.1-0.20220526070836-43b4ac597bf3 h1:wUzqi3GpKYqwIAY+vVRN0fwOKs/W9GiBSQL8QLY7U3c=
-github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.1.1-0.20220526070836-43b4ac597bf3/go.mod h1:Mm5Wvo87wRTqXQkHFJHvPoiSVVqn6aiFTFhZeL9cizc=
+github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4 h1:wesBm2PirL4u/zsvBpEhS5PrrKENGdChW7suy9Tuy5c=
+github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4/go.mod h1:x68COjv2yqphSmGWZDPV9WcBENA9+e8v21aGFO5i3PQ=
+github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.1.1-0.20220531081201-ea223a47fae4 h1:P390Tq0Ha2Q6F55z1sHkKkQtPvspAplUHD/nUlGHsBc=
+github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.1.1-0.20220531081201-ea223a47fae4/go.mod h1:etLWwS1G2IqHDuArHqB0OWQvpdcztuBxopWrRE+mpk0=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96/go.mod h1:Qh8CwZgvJUkLughtfhJv5dyTYa91l1fOUCrgjqmcifM=
