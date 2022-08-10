@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,6 +34,7 @@ type DellCsiVolumeGroupSnapshotSpec struct {
 	Volumesnapshotclass string              `json:"volumesnapshotclass"`
 	PvcLabel            string              `json:"pvcLabel,omitempty"`
 	PvcList             []string            `json:"pvcList,omitempty"`
+	Timeout             time.Duration       `json:"timeout,omitempty"`
 }
 
 // MemberReclaimPolicy describes a policy for end-of-life maintenance of VGS

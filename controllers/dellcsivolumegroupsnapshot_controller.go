@@ -86,6 +86,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 
 	log.Info("VG Snapshotter Triggered")
 
+	//idem := false
+
 	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	log.Info("VG Snapshotter reconcile namespace", "req", req.NamespacedName.Namespace)
 	if err := r.Get(ctx, req.NamespacedName, vg); err != nil {
@@ -110,6 +112,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	}
 
 	if vg.Status.Status == common.EventStatusPending {
+		log.Info("&&&VG snapshotter status is pending&&&")
 		log.Info("VG Snapshotter reconcile found vg exists in pending state", "groupID", vg.Status.SnapshotGroupID)
 		log.Info("VG Snapshotter reconcile found vg exists in pending state", "members list", vg.Status.Snapshots)
 		return ctrl.Result{}, fmt.Errorf("VG Snapshotter status is pending. Avoid creation of another snapshot")
@@ -192,6 +195,9 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 		otherParams[common.ExistingGroupID] = tokens[index-1]
 	}
 	log.Info("VG Snapshotter vg create", "existing GroupID", otherParams[common.ExistingGroupID])
+
+	//var res *csiext.CreateVolumeGroupSnapshotResponse
+
 	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIDs, otherParams)
 	if grpcErr != nil {
 		vg.Status.Status = common.EventStatusError
@@ -316,7 +322,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 	// note: external snapshotter updates volumesnapshot status fields
 	// wait till snapshot status is updated to done for all snapshots
 
-	ok, err := r.checkSnapshotStatus(ctx, vg.Namespace, snaps)
+	ok, err := r.checkSnapshotStatus(ctx, vg.Namespace, snaps, vg.Spec.Timeout)
 	status := common.EventStatusError
 	if ok {
 		status = common.EventStatusComplete
@@ -385,8 +391,9 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 	return true, nil
 }
 
-func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string) (bool, error) {
-	timeout := time.After(10 * time.Second)
+func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string, timeouts time.Duration) (bool, error) {
+	timeoutsec := timeouts * 1000000000
+	timeout := time.After(timeoutsec)
 	ticker := time.Tick(500 * time.Millisecond)
 	// Keep trying until we're timed out or get a result/error
 	for {

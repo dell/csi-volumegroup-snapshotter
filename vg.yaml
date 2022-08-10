@@ -2,7 +2,7 @@ apiVersion: volumegroup.storage.dell.com/v1
 kind: DellCsiVolumeGroupSnapshot
 metadata:
   # Name must be 13 characters or less in length
-  name: "vg-snaprun1"
+  name: "vg-snaprun52"
   namespace: "helmtest-vxflexos"
 spec:
   # Add fields here
@@ -10,9 +10,10 @@ spec:
   # defines how to process VolumeSnapshot members when volume group snapshot is deleted
   # "Retain" - keep VolumeSnapshot instances
   # "Delete" - delete VolumeSnapshot instances
-  memberReclaimPolicy: "Retain"
-  volumesnapshotclass: "vxflexos-snapclass"
+  memberReclaimPolicy: "Delete"
+  volumesnapshotclass: "vgs-test"
   pvcLabel: "vgs-snap-label"
+  timeout: 90
   # pvcList:
   #   - "pvcName1"
   #   - "pvcName2"
