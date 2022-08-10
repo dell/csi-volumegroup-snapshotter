@@ -86,8 +86,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 
 	log.Info("VG Snapshotter Triggered")
 
-	//idem := false
-
 	vg := new(vgsv1.DellCsiVolumeGroupSnapshot)
 	log.Info("VG Snapshotter reconcile namespace", "req", req.NamespacedName.Namespace)
 	if err := r.Get(ctx, req.NamespacedName, vg); err != nil {
@@ -195,8 +193,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 		otherParams[common.ExistingGroupID] = tokens[index-1]
 	}
 	log.Info("VG Snapshotter vg create", "existing GroupID", otherParams[common.ExistingGroupID])
-
-	//var res *csiext.CreateVolumeGroupSnapshotResponse
 
 	res, grpcErr := r.VGClient.CreateVolumeGroupSnapshot(groupName, srcVolIDs, otherParams)
 	if grpcErr != nil {
