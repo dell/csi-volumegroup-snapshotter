@@ -10,9 +10,11 @@ spec:
   # defines how to process VolumeSnapshot members when volume group snapshot is deleted
   # "Retain" - keep VolumeSnapshot instances
   # "Delete" - delete VolumeSnapshot instances
-  memberReclaimPolicy: "Delete"
-  volumesnapshotclass: "vgs-test"
+  memberReclaimPolicy: "Retain"
+  volumesnapshotclass: "vxflexos-snapclass"
   pvcLabel: "vgs-snap-label"
+  # defines timeout value for snapshots to be created
+  # timeout value is in seconds
   timeout: 90
   # pvcList:
   #   - "pvcName1"
