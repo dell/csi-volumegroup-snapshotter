@@ -110,7 +110,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	}
 
 	if vg.Status.Status == common.EventStatusPending {
-		log.Info("&&&VG snapshotter status is pending&&&")
 		log.Info("VG Snapshotter reconcile found vg exists in pending state", "groupID", vg.Status.SnapshotGroupID)
 		log.Info("VG Snapshotter reconcile found vg exists in pending state", "members list", vg.Status.Snapshots)
 		return ctrl.Result{}, fmt.Errorf("VG Snapshotter status is pending. Avoid creation of another snapshot")
