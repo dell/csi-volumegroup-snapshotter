@@ -113,6 +113,7 @@ func MakeVG(name, ns, driver, pvcLabel, vsc string, reclaimPolicy vgsv1.MemberRe
 			Volumesnapshotclass: vsc,
 			PvcLabel:            pvcLabel,
 			PvcList:             pvcList,
+			Timeout:             90,
 		},
 		Status: vgsv1.DellCsiVolumeGroupSnapshotStatus{
 			SnapshotGroupID: "",
