@@ -124,6 +124,7 @@ func MakeVG(name, ns, driver, pvcLabel, vsc string, reclaimPolicy vgsv1.MemberRe
 	return volumeGroup
 }
 
+//MakeVSCRetain create a Volumesnapshot Class object with deletion policy as Retain
 func MakeVSCRetain(name, driver string) s1.VolumeSnapshotClass {
 	vsc := s1.VolumeSnapshotClass{
 		ObjectMeta: metav1.ObjectMeta{

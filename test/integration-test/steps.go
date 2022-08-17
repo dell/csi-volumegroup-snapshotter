@@ -536,6 +536,11 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 		Name:      vgname,
 	}, vg)
 
+	if !strings.Contains(err.Error(), "not found") {
+		suite.addError(err)
+		return err
+	}
+
 	return nil
 }
 
