@@ -98,7 +98,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 			err := r.deleteVg(ctx, vg)
 			return ctrl.Result{}, err
 		}
-		log.Info("VG Snapshotter stauts is incomplete. If you still want to delete, manually clean up")
+		log.Info("VG Snapshotter status is incomplete. If you still want to delete, manually clean up")
 		return ctrl.Result{}, fmt.Errorf("VG Snapshotter status is incomplete. Nothing is deleted")
 	}
 
@@ -387,14 +387,9 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string, timeouts time.Duration) (bool, error) {
-
-	fmt.Printf("timeouts is: %v \n", timeouts)
-
 	if timeouts == 0 {
-
-		fmt.Printf("timeout not defined, giving default value of 90\n")
+		log.Info("Spec.Timeout not defined, using default value of 90")
 		timeouts = 90
-
 	}
 
 	timeoutsec := timeouts * 1000000000
