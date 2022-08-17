@@ -297,11 +297,9 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 			delete(f.Objects, k2)
 			delete(f.Objects, k)
 		}
-		if vc.Spec.DeletionPolicy == "Retain" {
-			delete(f.Objects, k)
-		}
 	}
 
+	delete(f.Objects, k)
 	return nil
 }
 
