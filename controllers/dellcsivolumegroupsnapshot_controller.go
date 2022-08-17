@@ -486,9 +486,14 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) deleteVg(
 		log.Info("VG Snapshotter deleted", "vg name", vg.Name)
 	}
 
-	// if deletion policy is retain, do nothing
+	// if deletion policy is retain, delete vg and not snapshots
 	if deletionPolicy == s1.VolumeSnapshotContentRetain {
-		log.Info("VG Snapshotter specified storage class has DeletionPolicy as Retain, no operation is performed")
+		controllerutil.RemoveFinalizer(vg, common.FinalizerName)
+		if err := r.Update(ctx, vg); err != nil {
+			log.Error(err, "VG Snapshotter failed updating after remove finalizer")
+			return err
+		}
+		log.Info("VG Snapshotter deleted", "vg name", vg.Name)
 	}
 
 	return nil

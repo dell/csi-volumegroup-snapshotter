@@ -105,6 +105,7 @@ func VGFeatureContext(s *godog.ScenarioContext) {
 	s.Step(`^I Call Clean up Volumes On Array$`, suite.CleanupVolsOnArray)
 	s.Step(`^I Call Test Create VG$`, suite.iCallTestCreateVG)
 	s.Step(`^I Call Test Create VG And HandleSnapContentDelete$`, suite.iCallTestCreateVGAndHandleSnapContentDelete)
+	s.Step(`^I Call Test Create VG With Snapshot Retain Policy$`, suite.iCallTestCreateVGWithSnapshotRetainPolicy)
 	s.Step(`^I Call Test Reconcile Error VG For "([^"]*)"$`, suite.iCallTestReconcileErrorVGFor)
 	s.Step(`^I Call Test Delete VG$`, suite.iCallTestDeleteVG)
 	s.Step(`^I Call Test Create VG With BadVsc$`, suite.iCallTestCreateVGWithBadVsc)
@@ -535,11 +536,6 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 		Name:      vgname,
 	}, vg)
 
-	if !strings.Contains(err.Error(), "not found") {
-		suite.addError(err)
-		return err
-	}
-
 	return nil
 }
 
@@ -951,6 +947,55 @@ func (suite *FakeVGTestSuite) makeFakeVSC() error {
 	ctx := context.Background()
 	err := suite.mockUtils.FakeClient.Create(ctx, &vsc)
 	return err
+}
+
+// Creating volumesnapshot class with deletion policy retain
+func (suite *FakeVGTestSuite) makeFakeVSCRetain() error {
+	vsc := common.MakeVSCRetain(vscname, "csi-vxflexos")
+	ctx := context.Background()
+	err := suite.mockUtils.FakeClient.Create(ctx, &vsc)
+	return err
+}
+
+// Test to create VG with volumesnapshot deletion policy as delete
+func (suite *FakeVGTestSuite) iCallTestCreateVGWithSnapshotRetainPolicy() error {
+
+	// make a k8s object and save in memory ,
+	// Reconcile is called to update this object and we can verify
+	// hence there is no need to have a k8s environment
+
+	// user want to make a vg with this src volume
+
+	// if vg exists delete it allowing us to rerun without error
+	// if there is a snap on array then cleanup
+
+	// pre-req volume snapshot class must exist
+	_ = suite.makeFakeVSCRetain()
+
+	for _, srcID := range suite.srcVolIDs {
+
+		// pre-req pv must  exist
+		testLog.Info("Make Fake PV and PVC for", setlabel, srcID)
+
+		_ = suite.makeFakePV(srcID)
+
+		_ = suite.makeFakePVC(srcID)
+	}
+
+	// user makes a vg create request to controller to select pvc with this label
+	_ = suite.makeFakeVG()
+
+	// run the VG controller Reconcile
+	err := suite.runVGReconcile()
+	if err != nil {
+		suite.addError(err)
+		_ = suite.CleanupVolsOnArray()
+	}
+	if len(suite.errs) == 0 {
+		return suite.verify()
+	}
+
+	return nil
 }
 
 func (suite *FakeVGTestSuite) makeBadVSC(drivername string) error {

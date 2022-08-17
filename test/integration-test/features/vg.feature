@@ -175,7 +175,19 @@ Scenario: Call Driver Verification for probing driver name and verifying it for 
 
 Scenario: Call HandleSnapContentDelete twice to clean up finalizer
   Given a Vgs Controller
+  And I Call Clean up Volumes On Array
   And I Call Create 2 Volumes "vg-snap-watch" "8"
   When I Call Test Create VG And HandleSnapContentDelete
   Then There are No Errors
   And I Call Clean up Volumes On Array
+
+Scenario: Call Deletevg when snapshot deletion policy is retain
+  Given a Vgs Controller
+  And I Call Clean up Volumes On Array
+  And I Call Create 2 Volumes "vg-snap23" "8"
+  When I Call Test Create VG With Snapshot Retain Policy
+  Then There are No Errors
+  When I Call Test Delete VG
+  Then There are No Errors
+  And I Call Clean up Volumes On Array
+  

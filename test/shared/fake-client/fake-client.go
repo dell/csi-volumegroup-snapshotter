@@ -278,6 +278,7 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 
 	// if obj is volumesnapshot, check its delete policy
 	// if it is 'delete', delete volumesnapshotcontent
+	// if it is 'retain', delete vgs and not volumesnapshots
 	if o, ok := obj.(*snapv1.VolumeSnapshot); ok {
 		contentname := o.Spec.Source.VolumeSnapshotContentName
 		vc := &snapv1.VolumeSnapshotContent{}
@@ -294,10 +295,13 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 			}
 
 			delete(f.Objects, k2)
+			delete(f.Objects, k)
+		}
+		if vc.Spec.DeletionPolicy == "Retain" {
+			delete(f.Objects, k)
 		}
 	}
 
-	delete(f.Objects, k)
 	return nil
 }
 
