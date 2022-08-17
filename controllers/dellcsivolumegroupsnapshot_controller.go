@@ -387,6 +387,16 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkReadyToUse(ctx context.Conte
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) checkSnapshotStatus(ctx context.Context, ns string, snaps string, timeouts time.Duration) (bool, error) {
+
+	fmt.Printf("timeouts is: %v \n", timeouts)
+
+	if timeouts == 0 {
+
+		fmt.Printf("timeout not defined, giving default value of 90\n")
+		timeouts = 90
+
+	}
+
 	timeoutsec := timeouts * 1000000000
 	timeout := time.After(timeoutsec)
 	ticker := time.Tick(500 * time.Millisecond)
