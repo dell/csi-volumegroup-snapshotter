@@ -156,7 +156,7 @@ spec:
 | memberReclaimPolicy | Currently Not used. Instead `Deletion Policy` from specified VolumeSnapshotClass defines how to process individual VolumeSnapshot instances when the snapshot group is deleted. There are two options -- "Retain" to retain the snapshots, and "Delete" to delete the snapshots. | true     | -       |
 | volumesnapshotclass | Volume snapshot class name for VGS members.                  | true     | -       |
 | pvcLabel            | A label that can also be included in PVC yamls to specify a set of PVCs for the VGS. Either this or pvcList is required, but not both. | false    | -       |
-| timeout             | defines timeout value for snapshots to be created            | true    | 90       |
+| timeout             | defines timeout value for snapshots to be created            | false    | 90       |
 | pvcList             | A list of PVCs for the VGS. Either this or pvcLabel is required, but not both. | false    | -       |
 
 Run the command `kubectl create -f vg.yaml` to take the specified snapshot.

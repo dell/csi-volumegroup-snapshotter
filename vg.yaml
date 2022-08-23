@@ -15,7 +15,7 @@ spec:
   pvcLabel: "vgs-snap-label"
   # defines timeout value for snapshots to be created
   # timeout value is in seconds
-  # default timeout value is 90 and cannot be left blank
+  # default timeout value is 90 if value is not set
   timeout: 90
   # pvcList:
   #   - "pvcName1"
