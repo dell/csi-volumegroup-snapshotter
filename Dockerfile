@@ -1,4 +1,4 @@
-#sha256:8c5723a40221c3e620a86e7ecba02b7af524e6c1960c83f46d361fa03a5eaaee
+#sha256:c8c1c0f893a7ba679fd65863f2d1389179a92957c31e95521b3290c6b6fc4a76
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-902.1661794353
 
 LABEL vendor="Dell Inc." \
