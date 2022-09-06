@@ -34,7 +34,7 @@ import (
 	volumegroupv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 
 	// latest v1 from external does compile ok
-	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
+	s1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 
 	"github.com/dell/csi-volumegroup-snapshotter/controllers"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/common"
