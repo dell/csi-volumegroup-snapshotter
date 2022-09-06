@@ -18,8 +18,8 @@ import (
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	fake_client "github.com/dell/csi-volumegroup-snapshotter/test/shared/fake-client"
 
-	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
-	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned/fake"
+	s1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	sfakeclient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned/fake"
 	core_v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/labels"

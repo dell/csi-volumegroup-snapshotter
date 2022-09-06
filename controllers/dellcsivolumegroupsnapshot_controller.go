@@ -32,9 +32,9 @@ import (
 	uuid "github.com/google/uuid"
 
 	"github.com/go-logr/logr"
-	s1 "github.com/kubernetes-csi/external-snapshotter/client/v4/apis/volumesnapshot/v1"
-	sclient "github.com/kubernetes-csi/external-snapshotter/client/v4/clientset/versioned"
-	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v4/informers/externalversions"
+	s1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	sclient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
+	sinformer "github.com/kubernetes-csi/external-snapshotter/client/v6/informers/externalversions"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
