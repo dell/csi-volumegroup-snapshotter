@@ -17,8 +17,8 @@ go 1.18
 require (
 	github.com/container-storage-interface/spec v1.5.0
 	github.com/cucumber/godog v0.12.2
-	github.com/dell/csi-volumegroup-snapshotter v1.0.0
-	github.com/dell/csi-vxflexos/v2 v2.3.1-0.20220815185816-051c2a06f70e
+	github.com/dell/csi-volumegroup-snapshotter v1.2.0
+	github.com/dell/csi-vxflexos/v2 v2.4.0
 	github.com/dell/gocsi v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.1
@@ -42,8 +42,8 @@ require (
 	github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4 // indirect
 	github.com/dell/dell-csi-extensions/podmon v1.0.0 // indirect
 	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.2.0 // indirect
-	github.com/dell/gofsutil v1.9.1-0.20220804050348-2b1cbfd2b12e // indirect
-	github.com/dell/goscaleio v1.7.1-0.20220809193611-f43f45ec203c // indirect
+	github.com/dell/gofsutil v1.10.0 // indirect
+	github.com/dell/goscaleio v1.8.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
