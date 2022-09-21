@@ -140,8 +140,8 @@ github.com/cucumber/messages-go/v16 v16.0.1/go.mod h1:EJcyR5Mm5ZuDsKJnT2N9KRnBK3
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dell/csi-vxflexos/v2 v2.3.1-0.20220815185816-051c2a06f70e h1:Gc4IKrYD8eKODwBQygisHr+dXdYOUEy9OY9OkquU7+w=
-github.com/dell/csi-vxflexos/v2 v2.3.1-0.20220815185816-051c2a06f70e/go.mod h1:lXpB6p4av1zJX54MCsWJyAkJOsKHH9xOl2mXNb8jTlw=
+github.com/dell/csi-vxflexos/v2 v2.4.0 h1:yvdwuWWrDoydra0LzQG3hvHK0IS9oY0alcDdex/VB1s=
+github.com/dell/csi-vxflexos/v2 v2.4.0/go.mod h1:YSJTpeScgtC8CU71LrcRE+A10THFaKJy9cKPxaTAclA=
 github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4 h1:wesBm2PirL4u/zsvBpEhS5PrrKENGdChW7suy9Tuy5c=
 github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4/go.mod h1:x68COjv2yqphSmGWZDPV9WcBENA9+e8v21aGFO5i3PQ=
 github.com/dell/dell-csi-extensions/podmon v1.0.0 h1:QoxioaFfjIP6cJ4s166A1JhgxIXWe/H0A60edO6nf4E=
@@ -150,10 +150,10 @@ github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.2.0 h1:uFt9JnQ/Wdvka3
 github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.2.0/go.mod h1:etLWwS1G2IqHDuArHqB0OWQvpdcztuBxopWrRE+mpk0=
 github.com/dell/gocsi v1.6.0 h1:ZmoMi17v1jK0RE0OGEivu52/RqHbOhP5cqs9SHExqa0=
 github.com/dell/gocsi v1.6.0/go.mod h1:+ihwgNYeFTv69Ym2X2Ij1idK72JYoNR8CeiWYJrrbho=
-github.com/dell/gofsutil v1.9.1-0.20220804050348-2b1cbfd2b12e h1:fw1Es1uTeIQwDdacaf95OsVKg0Bbtb9U6qR1IwQryPM=
-github.com/dell/gofsutil v1.9.1-0.20220804050348-2b1cbfd2b12e/go.mod h1:oebB2eaWWF1jniBQpsMGP6qeZcOPjgeWS0WwShS2KWY=
-github.com/dell/goscaleio v1.7.1-0.20220809193611-f43f45ec203c h1:upBNsXjDfYfJ2meBM+8OVC7Un6lLY4pzx2I6EY/j5EY=
-github.com/dell/goscaleio v1.7.1-0.20220809193611-f43f45ec203c/go.mod h1:TJbQ8N6hk48w5rEyBa+pRtrRJbPVnCTsYM3mmUyPNaY=
+github.com/dell/gofsutil v1.10.0 h1:BDEZj5/xeUugwyXftYTH8Xjc0kT5dvIXofQr7CGWMho=
+github.com/dell/gofsutil v1.10.0/go.mod h1:oebB2eaWWF1jniBQpsMGP6qeZcOPjgeWS0WwShS2KWY=
+github.com/dell/goscaleio v1.8.0 h1:a5wxvUwqvsr1KGUoHkY5Ol1jsNkQ8VKyTGdFeI5RVLQ=
+github.com/dell/goscaleio v1.8.0/go.mod h1:TJbQ8N6hk48w5rEyBa+pRtrRJbPVnCTsYM3mmUyPNaY=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96/go.mod h1:Qh8CwZgvJUkLughtfhJv5dyTYa91l1fOUCrgjqmcifM=
