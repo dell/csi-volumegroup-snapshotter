@@ -1,5 +1,5 @@
-#sha256:c5ffdf5938d73283cec018f2adf59f0ed9f8c376d93e415a27b16c3c6aad6f45
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6-994
+#sha256:630cf7bdef807f048cadfe7180d6c27eb3aaa99323ffc3628811da230ed3322a
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.2-13
 
 LABEL vendor="Dell Inc." \
       name="dellcsi-vg-snapshotter" \
