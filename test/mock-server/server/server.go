@@ -28,20 +28,20 @@ import (
 	"google.golang.org/grpc"
 )
 
-//MockVolumeGroupSnapshotServer mock VolumeGroupSnapshotServer
+// MockVolumeGroupSnapshotServer mock VolumeGroupSnapshotServer
 type MockVolumeGroupSnapshotServer struct{}
 
-//MockServer grpc server handle
+// MockServer grpc server handle
 var MockServer *grpc.Server
 
-//ProbeController grpc call to get driver information
+// ProbeController grpc call to get driver information
 func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csiext.ProbeControllerRequest) (*csiext.ProbeControllerResponse, error) {
 	out := &csiext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
 
-//CreateVolumeGroupSnapshot creete vgs
+// CreateVolumeGroupSnapshot creete vgs
 func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *vgsext.CreateVolumeGroupSnapshotRequest) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &vgsext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
@@ -59,7 +59,7 @@ type response struct {
 	Error string      `json:"error"`
 }
 
-//FindStub post find request and returns the unmarshalled response
+// FindStub post find request and returns the unmarshalled response
 func FindStub(service, method string, in, out interface{}) error {
 	url := "http://localhost:4771/find"
 	pyl := payload{
@@ -97,7 +97,7 @@ func FindStub(service, method string, in, out interface{}) error {
 	return json.Unmarshal(data, out)
 }
 
-//RunServer starts a mock server
+// RunServer starts a mock server
 func RunServer(stubsPath string) {
 	fmt.Print("RUNNING MOCK SERVER")
 	const (
@@ -146,7 +146,7 @@ func RunServer(stubsPath string) {
 	}()
 }
 
-//StopMockServer stop mock server gracefully
+// StopMockServer stop mock server gracefully
 func StopMockServer() {
 	MockServer.GracefulStop()
 	fmt.Printf("Server stopped gracefully")

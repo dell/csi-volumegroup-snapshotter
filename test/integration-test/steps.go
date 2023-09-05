@@ -80,7 +80,7 @@ var testLog = logf.Log.WithName("int-test")
 
 var fakeRecorder = record.NewFakeRecorder(100)
 
-//FakeVGTestSuite setup test suite
+// FakeVGTestSuite setup test suite
 type FakeVGTestSuite struct {
 	errs                []error
 	driverName          string
@@ -110,7 +110,7 @@ func (suite *FakeVGTestSuite) thereAreNoErrors() error {
 	return suite.errs[0]
 }
 
-//VGFeatureContext gherkin steps for feature
+// VGFeatureContext gherkin steps for feature
 func VGFeatureContext(s *godog.ScenarioContext) {
 	suite := &FakeVGTestSuite{}
 	s.Step(`^a Vgs Controller$`, suite.aVgsController)
@@ -140,7 +140,7 @@ func VGFeatureContext(s *godog.ScenarioContext) {
 
 }
 
-//BeforeTestSuite rune once to initialize
+// BeforeTestSuite rune once to initialize
 func (suite *FakeVGTestSuite) BeforeTestSuite() {
 	testLog.Info("Onetime init for Feature...")
 	opts := zap.Options{
@@ -155,7 +155,7 @@ func (suite *FakeVGTestSuite) BeforeTestSuite() {
 	logf.SetLogger(logger)
 }
 
-//CleanupTestSuite new in godog : call before and after all scenarios
+// CleanupTestSuite new in godog : call before and after all scenarios
 func CleanupTestSuite(s *godog.TestSuiteContext) {
 	suite := &FakeVGTestSuite{}
 	s.BeforeSuite(func() {
@@ -166,7 +166,7 @@ func CleanupTestSuite(s *godog.TestSuiteContext) {
 	})
 }
 
-//iForceUpdateVGError force error methods
+// iForceUpdateVGError force error methods
 func (suite *FakeVGTestSuite) iForceUpdateVGError(value string) error {
 	testLog.Info("force VG update error")
 	reconcileVgname = value[:13]
@@ -251,7 +251,7 @@ func (suite *FakeVGTestSuite) iSetNSName(value string) error {
 	return nil
 }
 
-//CleanupVolsOnArray delete pflex array volumes
+// CleanupVolsOnArray delete pflex array volumes
 func (suite *FakeVGTestSuite) CleanupVolsOnArray() error {
 
 	//  array cleanup
@@ -287,7 +287,7 @@ func (suite *FakeVGTestSuite) iCallDeleteVolume(srcID string) error {
 	return nil
 }
 
-//make volumes to test with
+// make volumes to test with
 func (suite *FakeVGTestSuite) iCallCreateVolumes(count int, vname string, size int64) error {
 	ctx := context.Background()
 	suite.VolCount = count
@@ -400,7 +400,7 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 	return nil
 }
 
-//ShouldFail refer fake_client.go , force calls to k8s to return error during controller error handling
+// ShouldFail refer fake_client.go , force calls to k8s to return error during controller error handling
 func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) error {
 	switch v := obj.(type) {
 	case *vgsv1.DellCsiVolumeGroupSnapshot:
@@ -1111,7 +1111,7 @@ func (suite *FakeVGTestSuite) iCallGetSnapshot(srcID string) (string, error) {
 	return "", nil
 }
 
-//TearDownTestSuite run once per suite to remove array volumes
+// TearDownTestSuite run once per suite to remove array volumes
 func (suite *FakeVGTestSuite) TearDownTestSuite() {
 	testLog.Info("Cleaning up resources...")
 	_ = suite.CleanupVolsOnArray()

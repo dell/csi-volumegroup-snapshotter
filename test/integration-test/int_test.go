@@ -87,12 +87,12 @@ func init() {
 	}
 }
 
-//TestDummy not used
+// TestDummy not used
 func TestDummy(t *testing.T) {
 
 }
 
-//TestMain similar to driver integration test
+// TestMain similar to driver integration test
 // similar to driver integration test
 // use godog feature to run init and cleanup steps before and after all scenarios
 func TestMain(m *testing.M) {
