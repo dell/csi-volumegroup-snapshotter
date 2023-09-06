@@ -58,7 +58,7 @@ const (
 	DefaultPort = "4771"
 )
 
-//RunStubServer test server
+// RunStubServer test server
 func RunStubServer(opt Options) {
 	if opt.Port == "" {
 		opt.Port = DefaultPort

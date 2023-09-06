@@ -35,19 +35,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
-//ErrorInjector to force error
+// ErrorInjector to force error
 type ErrorInjector interface {
 	ShouldFail(method string, obj runtime.Object) error
 }
 
-//StorageKey metadata of object to store
+// StorageKey metadata of object to store
 type StorageKey struct {
 	Namespace string
 	Name      string
 	Kind      string
 }
 
-//Client Objects mocks k8s resources
+// Client Objects mocks k8s resources
 // ErrorInjector is used to force errors from controller for test
 // refer steps.go in int-test folder
 type Client struct {
@@ -55,7 +55,7 @@ type Client struct {
 	ErrorInjector ErrorInjector
 }
 
-//MockUtils fake struct
+// MockUtils fake struct
 type MockUtils struct {
 	//FakeClient client
 	FakeClient *Client
@@ -79,7 +79,7 @@ func getKey(obj runtime.Object) (StorageKey, error) {
 	}, nil
 }
 
-//NewFakeClient create fake client
+// NewFakeClient create fake client
 func NewFakeClient(initialObjects []runtime.Object, errorInjector ErrorInjector) (*Client, error) {
 	client := &Client{
 		Objects:       map[StorageKey]runtime.Object{},
@@ -96,7 +96,7 @@ func NewFakeClient(initialObjects []runtime.Object, errorInjector ErrorInjector)
 	return client, nil
 }
 
-//Get fake object
+// Get fake object
 func (f Client) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Get", obj); err != nil {
@@ -131,7 +131,7 @@ func (f Client) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 	return err
 }
 
-//List fake objects
+// List fake objects
 func (f Client) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("List", list); err != nil {
@@ -228,7 +228,7 @@ func (f *Client) listPersistentVolume(list *core_v1.PersistentVolumeList) error 
 	return nil
 }
 
-//Create fake object
+// Create fake object
 func (f Client) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Create", obj); err != nil {
@@ -255,7 +255,7 @@ func (f Client) Create(ctx context.Context, obj client.Object, opts ...client.Cr
 	return nil
 }
 
-//Delete fake object
+// Delete fake object
 func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
 	if len(opts) > 0 {
 		return fmt.Errorf("delete options are not supported")
@@ -315,7 +315,7 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 	return nil
 }
 
-//SetDeletionTimeStamp set deletion timestamp so that reconcile can go into deletion part of code
+// SetDeletionTimeStamp set deletion timestamp so that reconcile can go into deletion part of code
 func (f Client) SetDeletionTimeStamp(ctx context.Context, obj client.Object) error {
 	k, err := getKey(obj)
 	if err != nil {
@@ -331,7 +331,7 @@ func (f Client) SetDeletionTimeStamp(ctx context.Context, obj client.Object) err
 	return fmt.Errorf("failed to set timestamp")
 }
 
-//Update fake object
+// Update fake object
 func (f Client) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Update", obj); err != nil {
@@ -358,27 +358,27 @@ func (f Client) Update(ctx context.Context, obj client.Object, opts ...client.Up
 	return nil
 }
 
-//Patch fake object
+// Patch fake object
 func (f Client) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
 	panic("implement me")
 }
 
-//DeleteAllOf delete all objects
+// DeleteAllOf delete all objects
 func (f Client) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
 	panic("implement me")
 }
 
-//Status of client
+// Status of client
 func (f Client) Status() client.StatusWriter {
 	return f
 }
 
-//Scheme of client
+// Scheme of client
 func (f Client) Scheme() *runtime.Scheme {
 	panic("implement me")
 }
 
-//RESTMapper for client
+// RESTMapper for client
 func (f Client) RESTMapper() meta.RESTMapper {
 	panic("implement me")
 }

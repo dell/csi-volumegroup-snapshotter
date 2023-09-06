@@ -23,7 +23,7 @@ import (
 
 const connectionLoggingInterval = 10 * time.Second
 
-//Connect to address
+// Connect to address
 func Connect(address string) (*grpc.ClientConn, error) {
 	dialOptions := []grpc.DialOption{
 		grpc.WithInsecure(),

@@ -25,21 +25,21 @@ import (
 	"google.golang.org/grpc"
 )
 
-//VolumeGroupSnapshot grpc calls to driver
+// VolumeGroupSnapshot grpc calls to driver
 type VolumeGroupSnapshot interface {
 	CreateVolumeGroupSnapshot(string, []string, map[string]string) (*vgsext.CreateVolumeGroupSnapshotResponse, error)
 	ProbeController() (string, error)
 	ProbeDriver() (string, error)
 }
 
-//VolumeGroupSnapshotClient vg controller
+// VolumeGroupSnapshotClient vg controller
 type VolumeGroupSnapshotClient struct {
 	conn    *grpc.ClientConn
 	log     logr.Logger
 	timeout time.Duration
 }
 
-//New csiclient
+// New csiclient
 func New(conn *grpc.ClientConn, log logr.Logger, timeout time.Duration) *VolumeGroupSnapshotClient {
 	return &VolumeGroupSnapshotClient{
 		conn:    conn,
@@ -48,7 +48,7 @@ func New(conn *grpc.ClientConn, log logr.Logger, timeout time.Duration) *VolumeG
 	}
 }
 
-//CreateVolumeGroupSnapshot grpc call to driver
+// CreateVolumeGroupSnapshot grpc call to driver
 func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, volIds []string,
 	params map[string]string) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
@@ -65,7 +65,7 @@ func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, vol
 	return client.CreateVolumeGroupSnapshot(ctx, req)
 }
 
-//ProbeController grpc call to driver
+// ProbeController grpc call to driver
 func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 	v.log.V(1).Info("Probing controller")
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
@@ -81,7 +81,7 @@ func (v *VolumeGroupSnapshotClient) ProbeController() (string, error) {
 	return driverName, nil
 }
 
-//ProbeDriver wrapper for grpc call
+// ProbeDriver wrapper for grpc call
 func (v *VolumeGroupSnapshotClient) ProbeDriver() (string, error) {
 	for {
 		v.log.V(2).Info("Probing driver for readiness")
