@@ -38,7 +38,7 @@ For documentation, please visit [Container Storage Modules documentation](https:
 * [Troubleshooting](#troubleshooting)
 
 ## Supported CSI Drivers
-Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots for PowerFlex and PowerStore arrays. 
+Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots on Dell PowerFlex and Dell PowerStore storage platforms. 
 Additional array support in CSM Volume Group Snapshotter is planned for the near future.
 
 ## Build
