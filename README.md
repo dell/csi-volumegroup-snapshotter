@@ -38,7 +38,7 @@ For documentation, please visit [Container Storage Modules documentation](https:
 * [Troubleshooting](#troubleshooting)
 
 ## Supported CSI Drivers
-Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots for PowerFlex array. 
+Currently, CSM Volume Group Snapshotter provides support to create and delete volume group snapshots on Dell PowerFlex and Dell PowerStore storage platforms. 
 Additional array support in CSM Volume Group Snapshotter is planned for the near future.
 
 ## Build
@@ -54,8 +54,9 @@ This project relies on the following tools which have to be installed in order t
 To install the external-snapshotter, please see the [GitHub repository](https://github.com/kubernetes-csi/external-snapshotter/tree/v4.1.1). If you have already installed the correct version of the external-snapshotter with the CSI driver, you don't need to do it again.
 
 ### Binaries
-To build an image for docker, run `make docker-build`
-To build an image for podman, run `make podman-build`
+To build an image, run `make docker`  
+Image will be built with Podman if it is avaialble; otherwise, Docker will be used. 
+> Note: Buildah is needed to build the image
 
 ## Installation
 To install and use the Volume Group Snapshotter, you need to install pre-requisites in your cluster, then install the CRD in your cluster and deploy it with the driver.
@@ -101,7 +102,7 @@ vgsnapshotter:
 ```
 To deploy CSM Volume Group Snapshotter with the driver, the following changes are required:
 1. Enable CSM Volume Group Snapshotter by changing the vgsnapshotter.enabled boolean to true. 
-2. In the vgsnapshotter.image field, put the location of the image you created following the steps in the build section, or link to one already built (such as the one on DockerHub, `dellemc/csi-volumegroup-snapshotter:v1.0.0`).
+2. In the vgsnapshotter.image field, put the location of the image you created following the steps in the build section, or link to one already built (such as the one on DockerHub, `dellemc/csi-volumegroup-snapshotter:v1.3.0`).
 3. Install/upgrade the driver normally. You should now have VGS successfully deployed with the driver!
 
 ## Volume Group Snapshot CRD Create
