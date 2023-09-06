@@ -1,3 +1,5 @@
+include overrides.mk 
+
 # VERSION defines the project version for the bundle. 
 # Update this value when you upgrade the version of your project.
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
@@ -29,7 +31,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 BUNDLE_IMG ?= controller-bundle:$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= vg-controller:v1.0.0
+IMG ?= amaas-eos-mw1.cec.lab.emc.com:5036/vg-controller:v1.3.0
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -103,13 +105,9 @@ check:  gosec
 	golint -set_exit_status ./.
 	go vet ./...
 
-docker-build: ## Build docker image with the manager.
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/vg-snapshotter main.go
-	docker build -t ${IMG} .
-
-podman-build: ## Build podman image with the manager.
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/vg-snapshotter main.go
-	podman build -t ${IMG} .
+docker:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/vg-snapshotter main.go	
+	make -f docker.mk build-base-image docker
 
 docker-push: docker-build ## Push docker image with the manager.
 	docker push ${IMG}
