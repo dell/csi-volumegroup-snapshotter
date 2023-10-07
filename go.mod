@@ -1,6 +1,6 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
-go 1.18
+go 1.20.5
 
 require (
 	github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4
