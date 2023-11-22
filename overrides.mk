@@ -3,10 +3,10 @@
 #
 
 # DEFAULT values
-DEFAULT_REGISTRY="sample_registry"
+DEFAULT_REGISTRY="dellemc"
 DEFAULT_IMAGENAME="csi-volumegroup-snapshotter"
 DEFAULT_BUILDSTAGE="final"
-DEFAULT_IMAGETAG="1.3.0"
+DEFAULT_IMAGETAG="1.4.0"
 
 # set the REGISTRY if needed
 ifeq ($(REGISTRY),)
