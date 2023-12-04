@@ -6,14 +6,14 @@ toolchain go1.21.0
 
 require (
 	github.com/dell/dell-csi-extensions/common v1.3.0
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.3.0
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.4.0
 	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v1.2.0
 	github.com/google/uuid v1.3.0
 	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.1
 	github.com/lithammer/fuzzysearch v1.1.2
 	github.com/stretchr/testify v1.7.0
-	google.golang.org/grpc v1.57.0
+	google.golang.org/grpc v1.57.1
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
 	k8s.io/client-go v0.23.0
