@@ -1,17 +1,19 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
-go 1.19
+go 1.21
+
+toolchain go1.21.0
 
 require (
-	github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.2.0
+	github.com/dell/dell-csi-extensions/common v1.3.0
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.4.0
 	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v1.2.0
 	github.com/google/uuid v1.3.0
 	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.1
 	github.com/lithammer/fuzzysearch v1.1.2
 	github.com/stretchr/testify v1.7.0
-	google.golang.org/grpc v1.56.3
+	google.golang.org/grpc v1.57.1
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
 	k8s.io/client-go v0.23.0
@@ -55,8 +57,8 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230815205213-6bfd019c3878 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20220521103104-8f96da9f5d5e // indirect
