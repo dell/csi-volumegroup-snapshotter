@@ -17,7 +17,7 @@ FROM $BASEIMAGE AS final
 COPY --from=builder /go/src/bin/vg-snapshotter .
 
 # Set entry point
-ENTRYPOINT ["/go/src/bin/vg-snapshotter"]
+ENTRYPOINT ["/vg-snapshotter"]
 
 # Metadata labels
 LABEL vendor="Dell Inc." \
