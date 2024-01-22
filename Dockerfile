@@ -22,7 +22,7 @@ ENTRYPOINT ["/vg-snapshotter"]
 # Metadata labels
 LABEL vendor="Dell Inc." \
       name="dellcsi-vg-snapshotter" \
-      summary="CSI VG Snapshotter for Dell EMC PowerFlex" \
+      summary="CSI VG Snapshotter for Dell EMC PowerFlex/PowerStore" \
       description="Dell Storage VolumeGroup Snapshot Controller for CSI" \
       version="1.4.0" \
       license="Apache-2.0"

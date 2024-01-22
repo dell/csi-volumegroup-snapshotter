@@ -54,5 +54,7 @@ overrides-help:
 	@echo "BUILDSTAGE  - The Dockerfile build stage to execute, default is: $(DEFAULT_BUILDSTAGE)"
 	@echo "              Stages can be found by looking at the Dockerfile"
 	@echo "              Current setting is: $(BUILDSTAGE)"
+	@echo "GOVERSION   - The version of Go to build with, default is: $(DEFAULT_GOVERSION)"
+	@echo "              Current setting is: $(GOVERSION)""
 	@echo
         
