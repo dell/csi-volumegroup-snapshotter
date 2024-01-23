@@ -42,7 +42,7 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
-all: build
+all: help
 
 ##@ General
 
