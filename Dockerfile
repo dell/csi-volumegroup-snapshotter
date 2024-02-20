@@ -1,8 +1,8 @@
 ARG BASEIMAGE
-ARG GOVERSION
+ARG GOIMAGE
 
 
-FROM golang:${GOVERSION} as builder
+FROM ${GOIMAGE} as builder
 RUN mkdir -p /go/src
 COPY ./ /go/src/
 WORKDIR /go/src/

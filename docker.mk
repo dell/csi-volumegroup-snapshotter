@@ -7,8 +7,9 @@ endif
 
 docker:
 	@echo "Base Images is set to: $(BASEIMAGE)"
+	@echo "Using Golang Image $(DEFAULT_GOIMAGE)"
 	@echo "Building: $(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
-	$(BUILDER) build -t "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)" --target $(BUILDSTAGE) --build-arg BASEIMAGE=$(BASEIMAGE) --build-arg GOVERSION=$(GOVERSION) .
+	$(BUILDER) build -t "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)" --target $(BUILDSTAGE) --build-arg BASEIMAGE=$(BASEIMAGE) --build-arg GOIMAGE=$(DEFAULT_GOIMAGE) .
 
 push:   
 	@echo "Pushing: $(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
