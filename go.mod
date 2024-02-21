@@ -1,8 +1,7 @@
+toolchain
 module github.com/dell/csi-volumegroup-snapshotter
 
-go 1.21
-
-toolchain go1.21.0
+go 1.22
 
 require (
 	github.com/dell/dell-csi-extensions/common v1.3.0
