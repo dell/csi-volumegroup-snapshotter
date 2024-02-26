@@ -180,7 +180,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	sort.Strings(srcVolIDs)
 	// make grpc call to driver
 	otherParams := make(map[string]string)
-	//remove systemID
+	// remove systemID
 	gid := vg.Status.SnapshotGroupID
 	tokens := strings.Split(gid, "-")
 	index := len(tokens)
@@ -256,8 +256,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) processResponse(ctx context.Conte
 	volIDPvcNameMap map[string]string,
 	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	sc *s1.VolumeSnapshotClass,
-	groupName string) (ctrl.Result, error) {
-
+	groupName string,
+) (ctrl.Result, error) {
 	log.Info("VG Snapshotter reconcile VG-response ", "SnapshotGroupID ", res.SnapshotGroupID)
 
 	snapshots := res.Snapshots
@@ -419,8 +419,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 	contentName string,
 	vgNamespace string,
 	vgName string,
-	failedMap map[string]string) error {
-
+	failedMap map[string]string,
+) error {
 	vs := new(s1.VolumeSnapshot)
 	nameSpacedName := t1.NamespacedName{
 		Namespace: vgNamespace,
@@ -444,7 +444,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 // handles vg deletion
 func (r *DellCsiVolumeGroupSnapshotReconciler) deleteVg(
 	ctx context.Context,
-	vg *vgsv1.DellCsiVolumeGroupSnapshot) error {
+	vg *vgsv1.DellCsiVolumeGroupSnapshot,
+) error {
 	log.Info("VG Snapshotter deletion triggered")
 
 	// get deletion policy from volumesnapshotclass
@@ -507,8 +508,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) createVolumeSnapshot(
 	vg *vgsv1.DellCsiVolumeGroupSnapshot,
 	s *csiext.Snapshot,
 	sc *s1.VolumeSnapshotClass,
-	failedMap map[string]string) (bool, string, error) {
-
+	failedMap map[string]string,
+) (bool, string, error) {
 	volsnap := new(s1.VolumeSnapshot)
 	nameSpacedName := t1.NamespacedName{
 		Namespace: vg.Namespace,
@@ -540,7 +541,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) createVolumeSnapshot(
 	}
 
 	updateSnapIDForContent := false
-	var vgName = vg.Name
+	vgName := vg.Name
 	var contentNameExists string
 	var contentErr error
 	if volumeSnapshotExists {
@@ -583,8 +584,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) updateVolumeSnapshotContentStatus
 	updateSnapIDForContent bool,
 	s *csiext.Snapshot,
 	vgName string,
-	failedMap map[string]string) error {
-
+	failedMap map[string]string,
+) error {
 	vc := &s1.VolumeSnapshotContent{}
 	nameSpacedName := t1.NamespacedName{
 		Namespace: "",
@@ -635,8 +636,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolsnapcontent(
 	ctx context.Context,
 	volsnap *s1.VolumeSnapshot,
 	vg *vgsv1.DellCsiVolumeGroupSnapshot,
-	snapID string) (string, bool, error) {
-
+	snapID string,
+) (string, bool, error) {
 	vcList := &s1.VolumeSnapshotContentList{}
 	err := r.List(ctx, vcList, &client.ListOptions{})
 	if err != nil || len(vcList.Items) < 1 {
@@ -664,7 +665,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) validateExistingVolSnapcontent(
 	vc s1.VolumeSnapshotContent,
 	volsnap *s1.VolumeSnapshot,
 	vg *vgsv1.DellCsiVolumeGroupSnapshot,
-	snapID string) (bool, error) {
+	snapID string,
+) (bool, error) {
 	var existVolumeSnapshotContentError bool
 	updateSnapIDForContent := false
 	var contentErr error
@@ -704,8 +706,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 	ctx context.Context,
 	volsnap *s1.VolumeSnapshot,
 	vg *vgsv1.DellCsiVolumeGroupSnapshot,
-	snapID string) (bool, error) {
-
+	snapID string,
+) (bool, error) {
 	log.Info("VG Snapshotter", "volumesnapshot exists skip create name=", volsnap.Name)
 	var existVolumeSnapshotError bool
 	var snapErr error
@@ -759,12 +761,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 		return existVolumeSnapshotError, contentErr
 	}
 	return false, nil
-
 }
 
 // get a list of source volume Ids, a map from these Ids to corresponding pvc names based on the given pvc label
 func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromLabel(ctx context.Context,
-	label string, ns string) ([]string, map[string]string, error) {
+	label string, ns string,
+) ([]string, map[string]string, error) {
 	pvclabel := label
 	pvcList := &v1.PersistentVolumeClaimList{}
 	log.Info("VG Snapshotter find matching pvc ", "label", label)
@@ -1046,7 +1048,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapUpdate(oldObj interface
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapCreate(obj interface{}) {
-
 	snapshot, ok := obj.(*s1.VolumeSnapshot)
 	if !ok {
 		err := fmt.Errorf("VG Snapshotter watcher volumesnapshot watch fails to convert obj to volumeSnapshot")
@@ -1081,7 +1082,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapCreate(obj interface{})
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
-
 	var clientset sclient.Interface
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -1107,7 +1107,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 }
 
 func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
-
 	var clientset sclient.Interface
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -1136,7 +1135,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 
 // HandleSnapContentDelete updates VG status based on changes to volumesnapshotcontent
 func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj interface{}) {
-
 	content, ok := obj.(*s1.VolumeSnapshotContent)
 	if !ok {
 		err := fmt.Errorf("VG Snapshotter watcher volumesnapshotcontent watch fails to convert obj to vscontent")
@@ -1157,7 +1155,6 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj inter
 		Name:      snapName,
 		Namespace: ns,
 	}, snap)
-
 	if err != nil {
 		// Snap already deleted. Need to add label like "snapshotGroup=vgs-helm-test" to content also
 		log.Error(err, "VG Snapshotter watcher snapshotcontent watch can't find its bound snapshot %s")

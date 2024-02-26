@@ -307,7 +307,6 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 		Name:      vgName,
 	}, newVg)
 	assert.Equal(suite.T(), "DellCsiVolumeGroupSnapshot.volumegroup.storage.dell.com \"vg-snap\" not found", err.Error())
-
 }
 
 // test a successful reconcile with setup
@@ -470,7 +469,6 @@ func (suite *VGSControllerTestSuite) TestGetSourceVolIDsFromNsEmptyPvcUnderNs() 
 
 // test bad reference
 func (suite *VGSControllerTestSuite) TestReconcileBadRef() {
-
 	key := fake_client.StorageKey{
 		Name:      fakePvcName1,
 		Namespace: "fake-ns",
@@ -482,7 +480,6 @@ func (suite *VGSControllerTestSuite) TestReconcileBadRef() {
 	suite.makeFakePV(ctx, fakePvName1, srcVolID)
 	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
 	suite.runGetReference(suite.mockUtils.FakeClient.Objects[key], "no kind is registered for the type")
-
 }
 
 func (suite *VGSControllerTestSuite) TestGetRefToRef() {
@@ -495,7 +492,6 @@ func (suite *VGSControllerTestSuite) TestGetRefToRef() {
 
 	ref := suite.runGetReference(suite.mockUtils.FakeClient.Objects[key], "")
 	suite.runGetReference(ref, "")
-
 }
 
 func (suite *VGSControllerTestSuite) TestGetRefToUnknownObj() {
@@ -653,7 +649,6 @@ func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expected
 }
 
 func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induceError string) {
-
 	// find existing vg , get volsnap , get volsnapcotent
 
 	vg := &vgsv1.DellCsiVolumeGroupSnapshot{}

@@ -58,14 +58,14 @@ func main() {
 	var retryIntervalStart time.Duration
 	var retryIntervalMax time.Duration
 	var csiOperationTimeout time.Duration
-	//var vgContextKeyPrefix   string
+	// var vgContextKeyPrefix   string
 	var domain string
 	flag.StringVar(&csiAddress, "csi-address", "/var/run/csi/csi.sock", "Address for the csi driver socket")
 	flag.IntVar(&workerThreads, "worker-threads", 2, "Number of concurrent reconcilers for each of the controllers")
 	flag.DurationVar(&retryIntervalStart, "retry-interval-start", time.Second, "Initial retry interval of failed reconcile request. It doubles with each failure, upto retry-interval-max")
 	flag.DurationVar(&retryIntervalMax, "retry-interval-max", 5*time.Minute, "Maximum retry interval of failed reconcile request")
 	flag.DurationVar(&csiOperationTimeout, "timeout", 10*time.Second, "Timeout of waiting for response for CSI Driver")
-	//flag.StringVar(&vgContextKeyPrefix, "context-prefix", "", "All the volume-group-attribute-keys with this prefix are added as annotation to the DellCSIVolumeGroup")
+	// flag.StringVar(&vgContextKeyPrefix, "context-prefix", "", "All the volume-group-attribute-keys with this prefix are added as annotation to the DellCSIVolumeGroup")
 	flag.Parse()
 
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -81,10 +81,9 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	setupLog.V(1).Info("Prefix", "Domain", domain)
-	//setupLog.V(1).Info(common.DellCSIVolumegroup, "Version", "1.0.0")
+	// setupLog.V(1).Info(common.DellCSIVolumegroup, "Version", "1.0.0")
 	// Connect to csi
 	csiConn, err := connection.Connect(csiAddress)
-
 	if err != nil {
 		setupLog.Error(err, "failed to connect to CSI driver")
 		os.Exit(1)

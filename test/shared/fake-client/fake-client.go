@@ -16,14 +16,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
 	snapv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	core_v1 "k8s.io/api/core/v1"
-
-	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -57,9 +56,9 @@ type Client struct {
 
 // MockUtils fake struct
 type MockUtils struct {
-	//FakeClient client
+	// FakeClient client
 	FakeClient *Client
-	//Specs client.WithWatch
+	// Specs client.WithWatch
 	Specs common.Common
 }
 
@@ -174,10 +173,10 @@ func (f *Client) listPersistentVolumeClaim(list *core_v1.PersistentVolumeClaimLi
 	//        opts.ListOptions{
 	//          LabelSelector: labels.SelectorFromSet(lbls),
 	lo := &client.ListOptions{}
-	//selector := opts.LabelSelector
+	// selector := opts.LabelSelector
 	opts.ApplyToList(lo)
-	//labels.internalSelector{labels.Requirement{key:"name", operator:"=", strValues:[]string{"xxxxx"}}}
-	//fmt.Printf("debug pvc list labelSelector %#v\n", lo.LabelSelector)
+	// labels.internalSelector{labels.Requirement{key:"name", operator:"=", strValues:[]string{"xxxxx"}}}
+	// fmt.Printf("debug pvc list labelSelector %#v\n", lo.LabelSelector)
 
 	ls := lo.LabelSelector
 	ns := lo.Namespace
@@ -187,8 +186,8 @@ func (f *Client) listPersistentVolumeClaim(list *core_v1.PersistentVolumeClaimLi
 		fmt.Printf("debug pvc list for ns = %s", ns)
 	}
 
-	//debug pvc list lo labels.internalSelector{labels.Requirement{key:"name", operator:"=", strValues:[]string{"vg-snap-label"}}}
-	//debug pvc list lo "name=vg-snap-label"
+	// debug pvc list lo labels.internalSelector{labels.Requirement{key:"name", operator:"=", strValues:[]string{"vg-snap-label"}}}
+	// debug pvc list lo "name=vg-snap-label"
 	for k, v := range f.Objects {
 		if k.Kind == "PersistentVolumeClaim" && v != nil {
 			vol := *v.(*core_v1.PersistentVolumeClaim)

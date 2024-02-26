@@ -110,7 +110,8 @@ func TestStub(t *testing.T) {
 			},
 			handler: handleFindStub,
 			expect:  "{\"data\":{\"hello\":\"world\"},\"error\":\"\"}\n",
-		}, {
+		},
+		{
 			name: "add stub matches regex",
 			mock: func() *http.Request {
 				payload := `{
@@ -131,7 +132,8 @@ func TestStub(t *testing.T) {
 			},
 			handler: handleAddStub,
 			expect:  "Success add stub",
-		}, {
+		},
+		{
 			name: "find stub matches regex",
 			mock: func() *http.Request {
 				payload := `{
@@ -145,7 +147,8 @@ func TestStub(t *testing.T) {
 			},
 			handler: handleFindStub,
 			expect:  "{\"data\":{\"reply\":\"OK\"},\"error\":\"\"}\n",
-		}, {
+		},
+		{
 			name: "error find stub contains",
 			mock: func() *http.Request {
 				payload := `{
@@ -161,7 +164,8 @@ func TestStub(t *testing.T) {
 			},
 			handler: handleFindStub,
 			expect:  "Can't find stub \n\nService: Testing \n\nMethod: TestMethod \n\nInput\n\n{\n\tfield1: hello field1\n\tfield2: hello field2\n\tfield3: hello field4\n}\n\nClosest Match \n\ncontains:{\n\tfield1: hello field1\n\tfield3: hello field3\n}",
-		}, {
+		},
+		{
 			name: "error find stub equals",
 			mock: func() *http.Request {
 				payload := `{"service":"Testing","method":"TestMethod","data":{"Hello":"World"}}`

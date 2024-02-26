@@ -52,9 +52,9 @@ type Output struct {
 }
 
 const (
-	//DefaultAddress for test
+	// DefaultAddress for test
 	DefaultAddress = "localhost"
-	//DefaultPort for test
+	// DefaultPort for test
 	DefaultPort = "4771"
 )
 

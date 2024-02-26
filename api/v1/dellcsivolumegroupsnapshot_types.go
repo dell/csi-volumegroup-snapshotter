@@ -38,9 +38,9 @@ type DellCsiVolumeGroupSnapshotSpec struct {
 type MemberReclaimPolicy string
 
 const (
-	//MemberReclaimDelete to delete VG
+	// MemberReclaimDelete to delete VG
 	MemberReclaimDelete = "Delete"
-	//MemberReclaimRetain to retail VG
+	// MemberReclaimRetain to retail VG
 	MemberReclaimRetain = "Retain"
 )
 

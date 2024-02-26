@@ -15,10 +15,9 @@ package testvg
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -89,7 +88,6 @@ func init() {
 
 // TestDummy not used
 func TestDummy(t *testing.T) {
-
 }
 
 // TestMain similar to driver integration test
@@ -105,10 +103,10 @@ func TestMain(m *testing.M) {
 	fmt.Print("waiting for client ...\n")
 	time.Sleep(5 * time.Second)
 
-	var opts = godog.Options{
+	opts := godog.Options{
 		Format: "pretty", // can define default values
 		Paths:  []string{"features"},
-		//Tags:   "wip",
+		// Tags:   "wip",
 	}
 	exitVal := godog.TestSuite{
 		Name:                 "godog",
