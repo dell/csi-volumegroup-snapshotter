@@ -57,7 +57,7 @@ const (
 	DefaultAddress = "localhost"
 	// DefaultPort for test
 	DefaultPort = "4771"
-	// DefaultTimeout for test
+	// TimeOut for test
 	TimeOut = 10 * time.Minute
 )
 
