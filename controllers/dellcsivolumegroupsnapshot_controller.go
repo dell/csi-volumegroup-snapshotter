@@ -155,12 +155,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 	var volIDPvcNameMap map[string]string
 	var volErr error
 	if vg.Spec.PvcList != nil {
-		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromPvcName(ctx, vg.Spec.PvcList, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIDsFromPvcName(ctx, vg.Spec.PvcList, ns)
 	} else if vg.Spec.PvcLabel != "" {
-		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromLabel(ctx, vg.Spec.PvcLabel, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIDsFromLabel(ctx, vg.Spec.PvcLabel, ns)
 	} else {
 		// snapshot pvcs under given namespace
-		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIdsFromNs(ctx, ns)
+		srcVolIDs, volIDPvcNameMap, volErr = r.getSourceVolIDsFromNs(ctx, ns)
 	}
 
 	if volErr != nil {
@@ -419,7 +419,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) bindContentToSnapshot(
 	contentName string,
 	vgNamespace string,
 	vgName string,
-	failedMap map[string]string,
+	_ map[string]string,
 ) error {
 	vs := new(s1.VolumeSnapshot)
 	nameSpacedName := t1.NamespacedName{
@@ -764,7 +764,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) checkExistingVolSnapshot(
 }
 
 // get a list of source volume Ids, a map from these Ids to corresponding pvc names based on the given pvc label
-func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromLabel(ctx context.Context,
+func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIDsFromLabel(ctx context.Context,
 	label string, ns string,
 ) ([]string, map[string]string, error) {
 	pvclabel := label
@@ -793,7 +793,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromLabel(ctx cont
 }
 
 // get a list of source volume Ids, a map from these Ids to corresponding pvc names based on a list of pvc names
-func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromPvcName(ctx context.Context, pvcNames []string, ns string) ([]string, map[string]string, error) {
+func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIDsFromPvcName(ctx context.Context, pvcNames []string, ns string) ([]string, map[string]string, error) {
 	duplicateMap := make(map[string]bool)
 	pvcList := make([]v1.PersistentVolumeClaim, 0)
 	for _, pvcName := range pvcNames {
@@ -802,9 +802,8 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromPvcName(ctx co
 		if present {
 			log.Info("VG Snapshotter vg finds duplicate PVC names ", "pvc name", pvcName)
 			continue
-		} else {
-			duplicateMap[pvcName] = true
 		}
+		duplicateMap[pvcName] = true
 
 		// find pvc for the given pvc Name
 		pvc := &v1.PersistentVolumeClaim{}
@@ -823,7 +822,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromPvcName(ctx co
 	return r.mapVolIDToPvcName(ctx, pvcList)
 }
 
-func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIdsFromNs(ctx context.Context, ns string) ([]string, map[string]string, error) {
+func (r *DellCsiVolumeGroupSnapshotReconciler) getSourceVolIDsFromNs(ctx context.Context, ns string) ([]string, map[string]string, error) {
 	pvcList := &v1.PersistentVolumeClaimList{}
 	log.Info("VG Snapshotter find matching pvc", "namespace", ns)
 
@@ -1013,7 +1012,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) ignoreUpdatePredicate() predicate
 	}
 }
 
-func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapUpdate(oldObj interface{}, obj interface{}) {
+func (r *DellCsiVolumeGroupSnapshotReconciler) handleSnapUpdate(_ interface{}, obj interface{}) {
 	nsnapshot, _ := obj.(*s1.VolumeSnapshot)
 
 	// vgs-helm-test-1-pvol1

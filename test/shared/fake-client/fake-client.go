@@ -96,7 +96,7 @@ func NewFakeClient(initialObjects []runtime.Object, errorInjector ErrorInjector)
 }
 
 // Get fake object
-func (f Client) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (f Client) Get(_ context.Context, key client.ObjectKey, obj client.Object) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Get", obj); err != nil {
 			return err
@@ -131,7 +131,7 @@ func (f Client) Get(ctx context.Context, key client.ObjectKey, obj client.Object
 }
 
 // List fake objects
-func (f Client) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (f Client) List(_ context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("List", list); err != nil {
 			return err
@@ -228,7 +228,7 @@ func (f *Client) listPersistentVolume(list *core_v1.PersistentVolumeList) error 
 }
 
 // Create fake object
-func (f Client) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (f Client) Create(_ context.Context, obj client.Object, _ ...client.CreateOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Create", obj); err != nil {
 			return err
@@ -315,7 +315,7 @@ func (f Client) Delete(ctx context.Context, obj client.Object, opts ...client.De
 }
 
 // SetDeletionTimeStamp set deletion timestamp so that reconcile can go into deletion part of code
-func (f Client) SetDeletionTimeStamp(ctx context.Context, obj client.Object) error {
+func (f Client) SetDeletionTimeStamp(_ context.Context, obj client.Object) error {
 	k, err := getKey(obj)
 	if err != nil {
 		return err
@@ -331,7 +331,7 @@ func (f Client) SetDeletionTimeStamp(ctx context.Context, obj client.Object) err
 }
 
 // Update fake object
-func (f Client) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (f Client) Update(_ context.Context, obj client.Object, _ ...client.UpdateOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Update", obj); err != nil {
 			return err
@@ -358,12 +358,12 @@ func (f Client) Update(ctx context.Context, obj client.Object, opts ...client.Up
 }
 
 // Patch fake object
-func (f Client) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (f Client) Patch(_ context.Context, _ client.Object, _ client.Patch, _ ...client.PatchOption) error {
 	panic("implement me")
 }
 
 // DeleteAllOf delete all objects
-func (f Client) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+func (f Client) DeleteAllOf(_ context.Context, _ client.Object, _ ...client.DeleteAllOfOption) error {
 	panic("implement me")
 }
 

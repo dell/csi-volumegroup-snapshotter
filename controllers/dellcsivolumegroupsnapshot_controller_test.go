@@ -618,7 +618,7 @@ func (suite *VGSControllerTestSuite) createReconcilerAndReq(localVgName string) 
 	return
 }
 
-func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(localVgName, expectedErr string) {
+func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(_, expectedErr string) {
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
 
 	mgr, _ := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
@@ -675,6 +675,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 		vc := &s1.VolumeSnapshotContent{}
 		for _, c := range vcList.Items {
 			fmt.Printf("fake client found content  ReadyToUse %#v \n", c)
+			c := c
 			vc = &c
 		}
 		*vc.Spec.Source.SnapshotHandle = "badid"
@@ -705,7 +706,7 @@ func (suite *VGSControllerTestSuite) deleteVGForReUse(localVgName string, induce
 	suite.makeFakeVG(ctx, label, "reuse-vg-snap", suite.mockUtils.Specs.Namespace, "Retain", nil)
 }
 
-func (suite *VGSControllerTestSuite) runFakeVGManager(localVgName, namespace, expectedErr string) {
+func (suite *VGSControllerTestSuite) runFakeVGManager(localVgName, _, expectedErr string) {
 	vgReconcile, req := suite.createReconcilerAndReq(localVgName)
 
 	// invoke controller Reconcile to test. typically k8s would call this when resource is changed

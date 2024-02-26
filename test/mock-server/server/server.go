@@ -35,14 +35,14 @@ type MockVolumeGroupSnapshotServer struct{}
 var MockServer *grpc.Server
 
 // ProbeController grpc call to get driver information
-func (vgs *MockVolumeGroupSnapshotServer) ProbeController(ctx context.Context, in *csiext.ProbeControllerRequest) (*csiext.ProbeControllerResponse, error) {
+func (vgs *MockVolumeGroupSnapshotServer) ProbeController(_ context.Context, in *csiext.ProbeControllerRequest) (*csiext.ProbeControllerResponse, error) {
 	out := &csiext.ProbeControllerResponse{}
 	err := FindStub("VolumeGroupSnapshot", "ProbeController", in, out)
 	return out, err
 }
 
 // CreateVolumeGroupSnapshot creete vgs
-func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(ctx context.Context, in *vgsext.CreateVolumeGroupSnapshotRequest) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
+func (vgs *MockVolumeGroupSnapshotServer) CreateVolumeGroupSnapshot(_ context.Context, in *vgsext.CreateVolumeGroupSnapshotRequest) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
 	out := &vgsext.CreateVolumeGroupSnapshotResponse{}
 	err := FindStub("VolumeGroupSnapshot", "CreateVolumeGroupSnapshot", in, out)
 	return out, err

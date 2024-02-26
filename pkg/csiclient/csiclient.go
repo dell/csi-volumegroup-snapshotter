@@ -49,7 +49,7 @@ func New(conn *grpc.ClientConn, log logr.Logger, timeout time.Duration) *VolumeG
 }
 
 // CreateVolumeGroupSnapshot grpc call to driver
-func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, volIds []string,
+func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, volIDs []string,
 	params map[string]string,
 ) (*vgsext.CreateVolumeGroupSnapshotResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), v.timeout)
@@ -58,7 +58,7 @@ func (v *VolumeGroupSnapshotClient) CreateVolumeGroupSnapshot(vgName string, vol
 	client := vgsext.NewVolumeGroupSnapshotClient(v.conn)
 
 	req := &vgsext.CreateVolumeGroupSnapshotRequest{
-		SourceVolumeIDs: volIds,
+		SourceVolumeIDs: volIDs,
 		Name:            vgName,
 		Parameters:      params,
 	}

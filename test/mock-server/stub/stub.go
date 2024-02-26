@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi"
 )
@@ -56,6 +57,8 @@ const (
 	DefaultAddress = "localhost"
 	// DefaultPort for test
 	DefaultPort = "4771"
+	// DefaultTimeout for test
+	TimeOut = 10 * time.Minute
 )
 
 // RunStubServer test server
@@ -79,7 +82,12 @@ func RunStubServer(opt Options) {
 
 	fmt.Println("Serving stub admin on http://" + addr)
 	go func() {
-		err := http.ListenAndServe(addr, r)
+		server := &http.Server{
+			Addr:              addr,
+			ReadHeaderTimeout: TimeOut,
+			Handler:           r,
+		}
+		err := server.ListenAndServe()
 		log.Println(err)
 	}()
 }
@@ -124,7 +132,7 @@ func handleAddStub(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleListStub(w http.ResponseWriter, r *http.Request) {
+func handleListStub(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(allStub())
 	if err != nil {
@@ -196,7 +204,7 @@ func handleFindStub(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleClearStub(w http.ResponseWriter, r *http.Request) {
+func handleClearStub(w http.ResponseWriter, _ *http.Request) {
 	clearStorage()
 	_, err := w.Write([]byte("OK"))
 	if err != nil {
