@@ -1,11 +1,12 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
 go 1.22
+
 toolchain go1.22.0
 
 require (
-	github.com/dell/dell-csi-extensions/common v1.3.0
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.4.0
+	github.com/dell/dell-csi-extensions/common v1.4.0
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.5.0
 	github.com/go-chi/chi v1.5.4
 	github.com/go-logr/logr v1.2.0
 	github.com/google/uuid v1.3.0
@@ -57,7 +58,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230815205213-6bfd019c3878 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20220521103104-8f96da9f5d5e // indirect
