@@ -137,7 +137,6 @@ func VGFeatureContext(s *godog.ScenarioContext) {
 	s.Step(`^I Force Update VG Error "([^"]*)"$`, suite.iForceUpdateVGError)
 	s.Step(`^I Set Another SystemID "([^"]*)"$`, suite.iSetAnotherSystemID)
 	s.Step(`^The Error Message Should Contain "([^"]*)"$`, suite.theErrorMessageShouldContain)
-
 }
 
 // BeforeTestSuite rune once to initialize
@@ -253,7 +252,6 @@ func (suite *FakeVGTestSuite) iSetNSName(value string) error {
 
 // CleanupVolsOnArray delete pflex array volumes
 func (suite *FakeVGTestSuite) CleanupVolsOnArray() error {
-
 	//  array cleanup
 	testLog.Info("cleanup volumes")
 	for _, srcID := range suite.srcVolIDs {
@@ -277,7 +275,6 @@ func (suite *FakeVGTestSuite) iCallDeleteVolume(srcID string) error {
 	delVolReq := new(csi.DeleteVolumeRequest)
 	delVolReq.VolumeId = srcID
 	_, err := driverClient.DeleteVolume(ctx, delVolReq)
-
 	if err != nil {
 		testLog.Error(err, "DeleteVolume failed")
 		return err
@@ -310,7 +307,6 @@ func (suite *FakeVGTestSuite) iCallCreateVolumes(count int, vname string, size i
 }
 
 func (suite *FakeVGTestSuite) iSetAnotherSystemID(systemType string) error {
-
 	if suite.arrays == nil {
 		testLog.Info("Initialize ArrayConfig from", "file", configFile)
 		var err error
@@ -379,7 +375,7 @@ func (suite *FakeVGTestSuite) theErrorMessageShouldContain(expected string) erro
 	if len(suite.errs) == 0 {
 		return errors.New("there were no errors but we expected: " + expected)
 	}
-	var foundError = false
+	foundError := false
 	for _, err := range suite.errs {
 		testLog.V(1).Info("need controller error message", "msg=", expected)
 
@@ -439,7 +435,6 @@ func (suite *FakeVGTestSuite) ShouldFail(method string, obj runtime.Object) erro
 
 // Given step implements startup csi grpc client , fake client
 func (suite *FakeVGTestSuite) aVgsController() error {
-
 	testLog.Info("Init called", "test=", "")
 
 	_ = vgsv1.AddToScheme(scheme.Scheme)
@@ -558,7 +553,6 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGAndHandleSnapContentDelete() erro
 
 // call reconcile to test vg snapshotter
 func (suite *FakeVGTestSuite) runVGReconcile() error {
-
 	vgReconcile, req := suite.makeReconciler()
 
 	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
@@ -629,7 +623,6 @@ func (suite *FakeVGTestSuite) iCallTestDeleteVG() error {
 
 // create pre-reqs and call reconcile
 func (suite *FakeVGTestSuite) iCallTestReconcileErrorVGFor(errorType string) error {
-
 	// make a k8s object and save in memory ,
 	// Reconcile is called to update this object and we can verify
 	// hence there is no need to have a k8s environment
@@ -685,7 +678,6 @@ func (suite *FakeVGTestSuite) iCallTestReconcileErrorVGFor(errorType string) err
 
 // create pre-reqs and call reconcile
 func (suite *FakeVGTestSuite) iCallTestCreateVG() error {
-
 	// make a k8s object and save in memory ,
 	// Reconcile is called to update this object and we can verify
 	// hence there is no need to have a k8s environment
@@ -726,7 +718,6 @@ func (suite *FakeVGTestSuite) iCallTestCreateVG() error {
 
 // create pre-reqs and call reconcile
 func (suite *FakeVGTestSuite) iCallTestCreateVGWithBadVsc() error {
-
 	// make a k8s object and save in memory ,
 	// Reconcile is called to update this object and we can verify
 	// hence there is no need to have a k8s environment
@@ -736,7 +727,7 @@ func (suite *FakeVGTestSuite) iCallTestCreateVGWithBadVsc() error {
 	// if vg exists delete it allowing us to rerun without error
 	// if there is a snap on array then cleanup
 
-	//pre-req volume snapshot class must exist
+	// pre-req volume snapshot class must exist
 	_ = suite.makeBadVSC("red-rrr")
 
 	for _, srcID := range suite.srcVolIDs {
@@ -770,7 +761,7 @@ func (suite *FakeVGTestSuite) verifyLabel(obj runtime.Object, key string) error 
 	vsnap := obj.(*s1.VolumeSnapshot)
 	testLog.V(1).Info("found fake object ", "Name", vsnap.Name)
 	testLog.V(1).Info("found fake object ", "Labels", vsnap.Labels)
-	//vsnap.ObjectMeta.Name snap.ObjectMeta.Labels
+	// vsnap.ObjectMeta.Name snap.ObjectMeta.Labels
 	lbs := vsnap.ObjectMeta.Labels
 	var expectedLabelFound bool
 	for k, l := range lbs {
@@ -791,12 +782,10 @@ func (suite *FakeVGTestSuite) verifyLabel(obj runtime.Object, key string) error 
 		testLog.Info("label matched ok for VolumeSnapshot=", vsnap.Name, vsnap.Labels)
 	}
 	return err
-
 }
 
 // verify VG object in fake-client has expected updates after reconcile runs
 func (suite *FakeVGTestSuite) verify() error {
-
 	// get the fake objects we created before reconcile
 	objMap := suite.mockUtils.FakeClient.Objects
 	var volGroup *vgsv1.DellCsiVolumeGroupSnapshot
@@ -844,7 +833,7 @@ func (suite *FakeVGTestSuite) verify() error {
 				} else {
 					testLog.Info("found VG", " ID ", volGroup.Status.SnapshotGroupID)
 				}
-				//2021-05-12 10:20:17 -0400 EDT
+				// 2021-05-12 10:20:17 -0400 EDT
 				stime := volGroup.Status.CreationTime.String()
 				if !regexp.MustCompile(`\d{4}-\d{1,2}-\d{1,2} \d{2}:\d{2}:\d{2} -\d{4} E([SD])T`).MatchString(stime) {
 					err = errors.New("unable to match time ")
@@ -918,7 +907,6 @@ func (suite *FakeVGTestSuite) debugFakeObjects() {
 }
 
 func (suite *FakeVGTestSuite) makeFakeVG() error {
-
 	getlabel := setlabel
 	if labelError {
 		testLog.Info("vg force label error")
@@ -944,7 +932,6 @@ func (suite *FakeVGTestSuite) makeFakeVG() error {
 }
 
 func (suite *FakeVGTestSuite) makeFakePVC(srcID string) error {
-
 	pvcname := pvcNamePrefix + "-" + srcID
 	lbls := labels.Set{
 		"volume-group": setlabel,
@@ -955,7 +942,7 @@ func (suite *FakeVGTestSuite) makeFakePVC(srcID string) error {
 	ctx := context.Background()
 	suite.removeExistingObject(pvcname, ns, "pvc")
 	err := suite.mockUtils.FakeClient.Create(ctx, &pvcObj)
-	//suite.debugObjects()
+	// suite.debugObjects()
 	return err
 }
 
@@ -976,7 +963,6 @@ func (suite *FakeVGTestSuite) makeFakeVSCRetain() error {
 
 // Test to create VG with volumesnapshot deletion policy as delete
 func (suite *FakeVGTestSuite) iCallTestCreateVGWithSnapshotRetainPolicy() error {
-
 	// make a k8s object and save in memory ,
 	// Reconcile is called to update this object and we can verify
 	// hence there is no need to have a k8s environment
@@ -1023,7 +1009,6 @@ func (suite *FakeVGTestSuite) makeBadVSC(drivername string) error {
 }
 
 func (suite *FakeVGTestSuite) makeFakePV(srcID string) error {
-
 	pvname := pvNamePrefix + "-" + srcID
 	if noPvError {
 		objMap := suite.mockUtils.FakeClient.Objects
@@ -1046,7 +1031,7 @@ func (suite *FakeVGTestSuite) makeFakePV(srcID string) error {
 	ctx := context.Background()
 	suite.removeExistingObject(pvname, ns, "pv")
 	err := suite.mockUtils.FakeClient.Create(ctx, &pvObj)
-	//suite.debugObjects()
+	// suite.debugObjects()
 	return err
 }
 
