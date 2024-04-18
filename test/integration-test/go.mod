@@ -23,7 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.1
 	go.uber.org/zap v1.19.1
-	google.golang.org/grpc v1.56.3
+	google.golang.org/grpc v1.57.1
 	k8s.io/api v0.23.0
 	k8s.io/apimachinery v0.23.0
 	k8s.io/client-go v0.23.0
@@ -39,9 +39,9 @@ require (
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
 	github.com/cucumber/messages-go/v16 v16.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dell/dell-csi-extensions/common v1.0.1-0.20220531081201-ea223a47fae4 // indirect
+	github.com/dell/dell-csi-extensions/common v1.4.0 // indirect
 	github.com/dell/dell-csi-extensions/podmon v1.0.0 // indirect
-	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.2.0 // indirect
+	github.com/dell/dell-csi-extensions/volumeGroupSnapshot v1.5.0 // indirect
 	github.com/dell/gofsutil v1.10.0 // indirect
 	github.com/dell/goscaleio v1.8.0 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
@@ -93,8 +93,10 @@ require (
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230815205213-6bfd019c3878 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
