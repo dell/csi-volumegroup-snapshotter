@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2021 - 2022 Dell Inc., or its subsidiaries. All Rights Reserved.
+Copyright (c) 2021 - 2024 Dell Inc., or its subsidiaries. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -102,7 +102,7 @@ vgsnapshotter:
 ```
 To deploy CSM Volume Group Snapshotter with the driver, the following changes are required:
 1. Enable CSM Volume Group Snapshotter by changing the vgsnapshotter.enabled boolean to true. 
-2. In the vgsnapshotter.image field, put the location of the image you created following the steps in the build section, or link to one already built (such as the one on DockerHub, `dellemc/csi-volumegroup-snapshotter:v1.5.0`).
+2. In the vgsnapshotter.image field, put the location of the image you created following the steps in the build section, or link to one already built (such as the one on DockerHub, `dellemc/csi-volumegroup-snapshotter:v1.5.1`).
 3. Install/upgrade the driver normally. You should now have VGS successfully deployed with the driver!
 
 ## Volume Group Snapshot CRD Create
