@@ -80,7 +80,7 @@ func FindStub(service, method string, in, out interface{}) error {
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf(string(body))
+		return fmt.Errorf("%v", string(body))
 	}
 
 	respRPC := new(response)
