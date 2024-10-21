@@ -1,8 +1,6 @@
 module github.com/dell/csi-volumegroup-snapshotter
 
-go 1.22
-
-toolchain go1.22.0
+go 1.23
 
 require (
 	github.com/dell/dell-csi-extensions/common v1.5.0
@@ -56,7 +54,6 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
