@@ -26,3 +26,4 @@ LABEL vendor="Dell Inc." \
       description="Dell Storage VolumeGroup Snapshot Controller for CSI" \
       version="1.6.0" \
       license="Apache-2.0"
+COPY licenses licenses/
