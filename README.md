@@ -12,6 +12,12 @@ You may obtain a copy of the License at
 [![Go version](https://img.shields.io/github/go-mod/go-version/dell/csi-volumegroup-snapshotter)](go.mod)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/dell/csi-volumegroup-snapshotter?include_prereleases&label=latest&style=flat-square)](https://github.com/dell/csi-volumegroup-snapshotter/releases/latest)
 
+---
+
+#### Dell CSM Volume Group Snapshotter will be deprecated in CSM 1.14 (May 2025) and will no longer be supported.
+
+---
+
 Dell CSM Volume Group Snapshotter is part of the [Container Storage Modules (CSM)](https://github.com/dell/csm) open-source suite of Kubernetes storage enablers for Dell EMC products.
 
 This project aims at extending native Kubernetes functionality to support _Disaster Recovery_ workflows by utilizing storage array based volume snapshot.
