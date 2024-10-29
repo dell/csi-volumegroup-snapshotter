@@ -6,7 +6,7 @@
 DEFAULT_REGISTRY="dellemc"
 DEFAULT_IMAGENAME="csi-volumegroup-snapshotter"
 DEFAULT_BUILDSTAGE="final"
-DEFAULT_IMAGETAG="1.6.0"
+DEFAULT_IMAGETAG="1.7.0"
 DEFAULT_GOIMAGE=$(shell sed -En 's/^go (.*)$$/\1/p' go.mod)
 
 # set the REGISTRY if needed
