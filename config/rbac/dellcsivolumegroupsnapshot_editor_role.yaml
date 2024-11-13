@@ -4,21 +4,21 @@ kind: ClusterRole
 metadata:
   name: dellcsivolumegroupsnapshot-editor-role
 rules:
-- apiGroups:
-  - volumegroup.storage.dell.com
-  resources:
-  - dellcsivolumegroupsnapshots
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - volumegroup.storage.dell.com
-  resources:
-  - dellcsivolumegroupsnapshots/status
-  verbs:
-  - get
+  - apiGroups:
+      - volumegroup.storage.dell.com
+    resources:
+      - dellcsivolumegroupsnapshots
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - volumegroup.storage.dell.com
+    resources:
+      - dellcsivolumegroupsnapshots/status
+    verbs:
+      - get

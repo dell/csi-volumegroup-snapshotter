@@ -8,7 +8,7 @@ data:
     apiVersion: volumegroup.storage.dell.com/v1
     kind: DellCsiVolumeGroupSnapshot
     metadata:
-      name: "vg-name-TIME"   # Swap out "vg-name" with name for VGS created 
+      name: "vg-name-TIME"   # Swap out "vg-name" with name for VGS created
       namespace: <NAMESPACE> # Insert namespace of PVCs
     spec:
       driverName: "csi-vxflexos.dellemc.com"
@@ -17,7 +17,7 @@ data:
       # "Delete" --- delete VolumeSnapshot instances
       memberReclaimPolicy: "delete"
       # volume snapshot class to use for VolumeSnapshot members in volume group snapshot
-      volumesnapshotclass: <VolumeSnapshot_Class> # Insert vsc to use 
+      volumesnapshotclass: <VolumeSnapshot_Class> # Insert vsc to use
       pvcLabel: <LABEL> # Insert label to use
 ---
 apiVersion: batch/v1
@@ -26,25 +26,25 @@ metadata:
   name: vgs-cron
   namespace: vxflexos
 spec:
-  schedule: "0 4 * * *" # Insert schedule, in unix-cron format here
+  schedule: "0 4 * * *"  # Insert schedule, in unix-cron format here
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: create-vgs
-            image: registry.access.redhat.com/ubi8/ubi-minimal:8.5-204
-            imagePullPolicy: IfNotPresent
-            command:
-            - /bin/sh
-            - -c
-            - cp vgs-config/vgs-config.yaml vgsToCreate && sed -i 's/TIME/'$(date +%m%d%y-%H%M%S )'/g' vgsToCreate && cat vgsToCreate && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl &&  kubectl create -f vgsToCreate
-            volumeMounts:
-              - name: vgs-yaml
-                mountPath: /vgs-config
+            - name: create-vgs
+              image: registry.access.redhat.com/ubi8/ubi-minimal:8.5-204
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - cp vgs-config/vgs-config.yaml vgsToCreate && sed -i 's/TIME/'$(date +%m%d%y-%H%M%S )'/g' vgsToCreate && cat vgsToCreate && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl &&  kubectl create -f vgsToCreate
+              volumeMounts:
+                - name: vgs-yaml
+                  mountPath: /vgs-config
           volumes:
             - name: vgs-yaml
               configMap:
                 name: vgs-config
           serviceAccountName: vxflexos-controller
-          restartPolicy: OnFailure 
+          restartPolicy: OnFailure
