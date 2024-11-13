@@ -12,87 +12,88 @@ spec:
     listKind: DellCsiVolumeGroupSnapshotList
     plural: dellcsivolumegroupsnapshots
     shortNames:
-    - vgs
+      - vgs
     singular: dellcsivolumegroupsnapshot
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - description: Name of the VG
-      jsonPath: .status.snapshotGroupName
-      name: VolumeGroupname
-      type: string
-    - jsonPath: .metadata.creationTimestamp
-      name: CreationTime
-      type: date
-    - description: Status of the VG
-      jsonPath: .status.status
-      name: Status
-      type: string
-    name: v1
-    schema:
-      openAPIV3Schema:
-        description: DellCsiVolumeGroupSnapshot is the Schema for the dellcsivolumegroupsnapshots API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: DellCsiVolumeGroupSnapshotSpec defines the desired state of DellCsiVolumeGroupSnapshot
-            properties:
-              driverName:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run "make" to regenerate code after modifying this file'
-                type: string
-              memberReclaimPolicy:
-                description: MemberReclaimPolicy describes a policy for end-of-life maintenance of VGS
-                enum:
-                - Delete
-                - Retain
-                type: string
-              pvcLabel:
-                type: string
-              pvcList:
-                items:
+    - additionalPrinterColumns:
+        - description: Name of the VG
+          jsonPath: .status.snapshotGroupName
+          name: VolumeGroupname
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: CreationTime
+          type: date
+        - description: Status of the VG
+          jsonPath: .status.status
+          name: Status
+          type: string
+      name: v1
+      schema:
+        openAPIV3Schema:
+          description: DellCsiVolumeGroupSnapshot is the Schema for the dellcsivolumegroupsnapshots API
+          properties:
+            apiVersion:
+              description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+              type: string
+            kind:
+              description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: DellCsiVolumeGroupSnapshotSpec defines the desired state of DellCsiVolumeGroupSnapshot
+              properties:
+                driverName:
+                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run "make" to regenerate code after modifying this file'
                   type: string
-                type: array
-              timeout:
-                description: A Duration represents the elapsed time between two instants
-                  as an int64 nanosecond count. The representation limits the largest
-                  representable duration to approximately 290 years.
-                format: int64
-                type: integer
-              volumesnapshotclass:
-                type: string
-            type: object
-          status:
-            description: DellCsiVolumeGroupSnapshotStatus defines the observed state of DellCsiVolumeGroupSnapshot
-            properties:
-              contentReadyToUse:
-                type: boolean
-              creationTime:
-                format: date-time
-                type: string
-              readyToUse:
-                type: boolean
-              snapshotGroupID:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run "make" to regenerate code after modifying this file'
-                type: string
-              snapshotGroupName:
-                type: string
-              snapshots:
-                type: string
-              status:
-                type: string
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+                memberReclaimPolicy:
+                  description: MemberReclaimPolicy describes a policy for end-of-life maintenance of VGS
+                  enum:
+                    - Delete
+                    - Retain
+                  type: string
+                pvcLabel:
+                  type: string
+                pvcList:
+                  items:
+                    type: string
+                  type: array
+                timeout:
+                  description:
+                    A Duration represents the elapsed time between two instants
+                    as an int64 nanosecond count. The representation limits the largest
+                    representable duration to approximately 290 years.
+                  format: int64
+                  type: integer
+                volumesnapshotclass:
+                  type: string
+              type: object
+            status:
+              description: DellCsiVolumeGroupSnapshotStatus defines the observed state of DellCsiVolumeGroupSnapshot
+              properties:
+                contentReadyToUse:
+                  type: boolean
+                creationTime:
+                  format: date-time
+                  type: string
+                readyToUse:
+                  type: boolean
+                snapshotGroupID:
+                  description: 'INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run "make" to regenerate code after modifying this file'
+                  type: string
+                snapshotGroupName:
+                  type: string
+                snapshots:
+                  type: string
+                status:
+                  type: string
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
 status:
   acceptedNames:
     kind: ""

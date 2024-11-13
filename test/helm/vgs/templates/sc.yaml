@@ -10,7 +10,7 @@ parameters:
   systemID: {{ .Values.systemId }}
 volumeBindingMode: Immediate
 allowedTopologies:
-- matchLabelExpressions:
-  - key: csi-vxflexos.dellemc.com/{{ .Values.systemId }}
-    values:
-    - csi-vxflexos.dellemc.com
+  - matchLabelExpressions:
+    - key: csi-vxflexos.dellemc.com/{{ .Values.systemId }}
+      values:
+      - csi-vxflexos.dellemc.com

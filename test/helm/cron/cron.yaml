@@ -28,19 +28,19 @@ spec:
       template:
         spec:
           containers:
-          - name: create-vgs
-            image: registry.access.redhat.com/ubi8/ubi-minimal:8.5-204
-            imagePullPolicy: IfNotPresent
-            command:
-            - /bin/sh
-            - -c
-            - cp vgs-config/vgs-config.yaml vgsToCreate && sed -i 's/TIME/'$(date +%m%d%y-%H%M%S )'/g' vgsToCreate && cat vgsToCreate && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl &&  kubectl create -f vgsToCreate
-            volumeMounts:
-              - name: vgs-yaml
-                mountPath: /vgs-config
+            - name: create-vgs
+              image: registry.access.redhat.com/ubi8/ubi-minimal:8.5-204
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - cp vgs-config/vgs-config.yaml vgsToCreate && sed -i 's/TIME/'$(date +%m%d%y-%H%M%S )'/g' vgsToCreate && cat vgsToCreate && curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl &&  kubectl create -f vgsToCreate
+              volumeMounts:
+                - name: vgs-yaml
+                  mountPath: /vgs-config
           volumes:
             - name: vgs-yaml
               configMap:
                 name: vgs-config
           serviceAccountName: vxflexos-controller
-          restartPolicy: OnFailure 
+          restartPolicy: OnFailure
