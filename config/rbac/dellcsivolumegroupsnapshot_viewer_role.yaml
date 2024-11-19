@@ -4,17 +4,17 @@ kind: ClusterRole
 metadata:
   name: dellcsivolumegroupsnapshot-viewer-role
 rules:
-- apiGroups:
-  - volumegroup.storage.dell.com
-  resources:
-  - dellcsivolumegroupsnapshots
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - volumegroup.storage.dell.com
-  resources:
-  - dellcsivolumegroupsnapshots/status
-  verbs:
-  - get
+  - apiGroups:
+      - volumegroup.storage.dell.com
+    resources:
+      - dellcsivolumegroupsnapshots
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - volumegroup.storage.dell.com
+    resources:
+      - dellcsivolumegroupsnapshots/status
+    verbs:
+      - get
