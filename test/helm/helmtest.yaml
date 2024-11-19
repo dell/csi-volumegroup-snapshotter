@@ -1,6 +1,6 @@
 ---
 # system ID for the storage pool for helm test
-systemId: 
+systemId:
 
 # storage pool for the storage pool for helm test
-storagePool: 
+storagePool:
