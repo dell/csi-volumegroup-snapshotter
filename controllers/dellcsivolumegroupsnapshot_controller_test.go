@@ -23,7 +23,7 @@ import (
 
 	vgsv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
 	pkg_common "github.com/dell/csi-volumegroup-snapshotter/pkg/common"
-	connection "github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
+	"github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	"github.com/dell/csi-volumegroup-snapshotter/test/mock-server/server"
 	"github.com/dell/csi-volumegroup-snapshotter/test/shared/common"
