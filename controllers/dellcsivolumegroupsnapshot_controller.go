@@ -25,7 +25,7 @@ import (
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/common"
 	csidriver "github.com/dell/csi-volumegroup-snapshotter/pkg/csiclient"
 	csiext "github.com/dell/dell-csi-extensions/volumeGroupSnapshot"
-	uuid "github.com/google/uuid"
+	"github.com/google/uuid"
 
 	"github.com/go-logr/logr"
 	s1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
@@ -125,7 +125,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) Reconcile(ctx context.Context, re
 		return ctrl.Result{}, err
 	}
 
-	// dont proceed if snapshotclass is not found
+	// don't proceed if snapshotclass is not found
 	snapClassName := vg.Spec.Volumesnapshotclass
 	sc := new(s1.VolumeSnapshotClass)
 	if scerr := r.Get(ctx, client.ObjectKey{Name: snapClassName}, sc); scerr != nil {
@@ -1096,10 +1096,14 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 
 	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, 0)
 	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshots().Informer()
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err = contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    r.handleSnapCreate,
 		UpdateFunc: r.handleSnapUpdate,
 	})
+	if err != nil {
+		return err
+	}
+
 	stop := make(chan struct{})
 	sharedInformerFactory.Start(stop)
 	return nil
@@ -1122,9 +1126,12 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Hour))
 	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
 
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err = contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: r.HandleSnapContentDelete,
 	})
+	if err != nil {
+		return err
+	}
 
 	stop := make(chan struct{})
 	sharedInformerFactory.Start(stop)
