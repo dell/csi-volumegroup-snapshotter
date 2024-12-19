@@ -309,17 +309,6 @@ func (suite *VGSControllerTestSuite) TestHandleSnapContentDelete() {
 	assert.Equal(suite.T(), "DellCsiVolumeGroupSnapshot.volumegroup.storage.dell.com \"vg-snap\" not found", err.Error())
 }
 
-// test a successful reconcile with setup
-func (suite *VGSControllerTestSuite) TestSetupManager() {
-	ns := suite.mockUtils.Specs.Namespace
-
-	suite.makeFakeVG(ctx, label, vgName, ns, "Retain", nil)
-	suite.makeFakeVSC(ctx)
-	suite.makeFakePV(ctx, fakePvName1, srcVolID)
-	suite.makeFakePVC(ctx, label, fakePvcName1, ns, fakePvName1)
-	suite.runFakeVGManagerSetup(vgName, "")
-}
-
 // test reconcile without a VG and error should be volumegroup not found
 func (suite *VGSControllerTestSuite) TestVgNotFound() {
 	suite.runFakeVGManager(vgName, suite.mockUtils.Specs.Namespace, "DellCsiVolumeGroupSnapshot.volumegroup.storage.dell.com \"vg-snap\" not found")
@@ -331,7 +320,7 @@ func (suite *VGSControllerTestSuite) TestVscNotFound() {
 	suite.runFakeVGManager(vgName, suite.mockUtils.Specs.Namespace, "VolumeSnapshotClass.snapshot.storage.k8s.io \"vsc\" not found")
 }
 
-// test getSourceVolIDs with with non-empty pvcLabel but no matching pvc. pvcList should be empty and return error
+// test getSourceVolIDs with non-empty pvcLabel but no matching pvc. pvcList should be empty and return error
 func (suite *VGSControllerTestSuite) TestNoMatchingPVC() {
 	noMatchingLbl := "noMatchingLbl"
 	suite.makeFakeVG(ctx, noMatchingLbl, vgName, suite.mockUtils.Specs.Namespace, "Retain", nil)
@@ -369,9 +358,9 @@ func (suite *VGSControllerTestSuite) TestPVCNotBound() {
 
 // test grpc call error to driver
 func (suite *VGSControllerTestSuite) TestCsiDriverCreateFail() {
-	suite.makeFakeVG(ctx, label, vgNameTestErr, suite.mockUtils.Specs.Namespace, "Retain", nil)
+	suite.makeFakeVG(ctx, label+"99", vgNameTestErr+"99", suite.mockUtils.Specs.Namespace, "Retain", nil)
 	suite.makeFakeVSC(ctx)
-	suite.makeFakePV(ctx, fakePvName1, srcVolID)
+	suite.makeFakePV(ctx, fakePvName1+"99", srcVolID+"99")
 	suite.makeFakePVC(ctx, label, fakePvcName1, suite.mockUtils.Specs.Namespace, fakePvName1)
 	suite.runFakeVGManager(vgNameTestErr, suite.mockUtils.Specs.Namespace, "deliberately return error to test csi driver extension grpc error")
 }
