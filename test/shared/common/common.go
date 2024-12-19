@@ -85,7 +85,7 @@ func MakePVC(name, ns, scName, volumeName string, lbl labels.Set) core_v1.Persis
 			Selector: &metav1.LabelSelector{
 				MatchLabels: lbl,
 			},
-			Resources: core_v1.ResourceRequirements{
+			Resources: core_v1.VolumeResourceRequirements{
 				Requests: core_v1.ResourceList{
 					core_v1.ResourceStorage: resource.MustParse("3Gi"),
 				},
