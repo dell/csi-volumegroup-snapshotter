@@ -20,10 +20,12 @@ COPY --from=builder /go/src/bin/vg-snapshotter .
 ENTRYPOINT ["/vg-snapshotter"]
 
 # Metadata labels
-LABEL vendor="Dell Inc." \
+LABEL vendor="Dell Technologies" \
+      maintainer="Dell Technologies" \
       name="dellcsi-vg-snapshotter" \
       summary="CSI VG Snapshotter for Dell EMC PowerFlex/PowerStore" \
       description="Dell Storage VolumeGroup Snapshot Controller for CSI" \
-      version="1.7.0" \
+      release="1.13.0" \
+      version="1.8.0" \
       license="Apache-2.0"
 COPY licenses licenses/
