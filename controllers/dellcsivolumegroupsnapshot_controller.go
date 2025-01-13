@@ -1096,7 +1096,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapWatch() error {
 
 	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, 0)
 	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshots().Informer()
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    r.handleSnapCreate,
 		UpdateFunc: r.handleSnapUpdate,
 	})
@@ -1122,7 +1122,7 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) snapContentWatch() error {
 	sharedInformerFactory := sinformer.NewSharedInformerFactory(clientset, time.Duration(time.Hour))
 	contentInformer := sharedInformerFactory.Snapshot().V1().VolumeSnapshotContents().Informer()
 
-	contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, _ = contentInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		DeleteFunc: r.HandleSnapContentDelete,
 	})
 
