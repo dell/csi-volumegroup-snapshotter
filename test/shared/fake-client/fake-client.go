@@ -398,14 +398,14 @@ type SubResourceWriterImpl struct {
 	client Client
 }
 
-func (s *SubResourceWriterImpl) Create(ctx context.Context, obj, subResource client.Object, opts ...client.SubResourceCreateOption) error {
-	panic("implement me")
+func (s *SubResourceWriterImpl) Create(ctx context.Context, subResource client.Object, _ client.Object, opts ...client.SubResourceCreateOption) error {
+	return nil
 }
 
-func (s *SubResourceWriterImpl) Update(ctx context.Context, obj, subResource client.Object, opts ...client.SubResourceUpdateOption) error {
-	panic("implement me")
+func (s *SubResourceWriterImpl) Update(ctx context.Context, subResource client.Object, opts ...client.SubResourceUpdateOption) error {
+	return nil
 }
 
-func (s *SubResourceWriterImpl) Patch(ctx context.Context, obj, subResource client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
-	panic("implement me")
+func (s *SubResourceWriterImpl) Patch(ctx context.Context, subResource client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
+	return nil
 }
