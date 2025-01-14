@@ -24,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	volumegroupv1 "github.com/dell/csi-volumegroup-snapshotter/api/v1"
@@ -36,6 +35,8 @@ import (
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/common"
 	"github.com/dell/csi-volumegroup-snapshotter/pkg/connection"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	webhook "sigs.k8s.io/controller-runtime/pkg/webhook"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -99,18 +100,22 @@ func main() {
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: "0",
-		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   leaderElectionID,
+		Scheme: scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: "0",
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port: 9443,
+		}),
+		LeaderElection:   enableLeaderElection,
+		LeaderElectionID: leaderElectionID,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start controller")
 		os.Exit(1)
 	}
 
-	expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(retryIntervalStart, retryIntervalMax)
+	// expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(retryIntervalStart, retryIntervalMax)
 	schemaErr := s1.AddToScheme(mgr.GetScheme())
 	if schemaErr != nil {
 		setupLog.Error(schemaErr, "problem running manager")
@@ -123,7 +128,8 @@ func main() {
 		EventRecorder: mgr.GetEventRecorderFor(common.DellCSIVolumegroup),
 		DriverName:    driverName,
 		Scheme:        mgr.GetScheme(),
-	}).SetupWithManager(mgr, expRateLimiter, workerThreads); err != nil {
+	}).SetupWithManager(mgr, workerThreads); err != nil {
+		// }).SetupWithManager(mgr, expRateLimiter, workerThreads); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DellCsiVolumeGroupSnapshot")
 		os.Exit(1)
 	}

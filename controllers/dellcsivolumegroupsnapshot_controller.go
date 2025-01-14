@@ -46,7 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/ratelimiter"
 )
 
 var log logr.Logger
@@ -1210,14 +1209,15 @@ func (r *DellCsiVolumeGroupSnapshotReconciler) HandleSnapContentDelete(obj inter
 
 // SetupWithManager sets up the controller with the Manager.
 // watch For DellCsiVolumeGroupSnapshot events
-func (r *DellCsiVolumeGroupSnapshotReconciler) SetupWithManager(mgr ctrl.Manager, limiter ratelimiter.RateLimiter, maxReconcilers int) error {
+func (r *DellCsiVolumeGroupSnapshotReconciler) SetupWithManager(mgr ctrl.Manager, maxReconcilers int) error {
+	// func (r *DellCsiVolumeGroupSnapshotReconciler) SetupWithManager(mgr ctrl.Manager, limiter ratelimiter.RateLimiter, maxReconcilers int) error {
 	go r.snapContentWatch()
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&vgsv1.DellCsiVolumeGroupSnapshot{}).
 		WithEventFilter(r.ignoreUpdatePredicate()).
 		WithOptions(reconcile.Options{
-			RateLimiter:             limiter,
+			// RateLimiter:             limiter,
 			MaxConcurrentReconciles: maxReconcilers,
 		}).
 		Complete(r)

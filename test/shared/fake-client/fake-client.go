@@ -96,7 +96,7 @@ func NewFakeClient(initialObjects []runtime.Object, errorInjector ErrorInjector)
 }
 
 // Get fake object
-func (f Client) Get(_ context.Context, key client.ObjectKey, obj client.Object) error {
+func (f Client) Get(_ context.Context, key client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
 	if f.ErrorInjector != nil {
 		if err := f.ErrorInjector.ShouldFail("Get", obj); err != nil {
 			return err
@@ -368,8 +368,8 @@ func (f Client) DeleteAllOf(_ context.Context, _ client.Object, _ ...client.Dele
 }
 
 // Status of client
-func (f Client) Status() client.StatusWriter {
-	return f
+func (f Client) Status() client.SubResourceWriter {
+	return &SubResourceWriterImpl{client: f}
 }
 
 // Scheme of client
@@ -379,5 +379,33 @@ func (f Client) Scheme() *runtime.Scheme {
 
 // RESTMapper for client
 func (f Client) RESTMapper() meta.RESTMapper {
+	panic("implement me")
+}
+
+func (f Client) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	panic("implement me")
+}
+
+func (f Client) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	panic("implement me")
+}
+
+func (f Client) SubResource(subResource string) client.SubResourceClient {
+	panic("implement me")
+}
+
+type SubResourceWriterImpl struct {
+	client Client
+}
+
+func (s *SubResourceWriterImpl) Create(ctx context.Context, obj, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	panic("implement me")
+}
+
+func (s *SubResourceWriterImpl) Update(ctx context.Context, obj, subResource client.Object, opts ...client.SubResourceUpdateOption) error {
+	panic("implement me")
+}
+
+func (s *SubResourceWriterImpl) Patch(ctx context.Context, obj, subResource client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	panic("implement me")
 }

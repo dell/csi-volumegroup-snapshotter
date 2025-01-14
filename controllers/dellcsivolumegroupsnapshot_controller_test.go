@@ -38,11 +38,12 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 var (
@@ -611,16 +612,21 @@ func (suite *VGSControllerTestSuite) runFakeVGManagerSetup(_, expectedErr string
 	vgReconcile, req := suite.createReconcilerAndReq(vgName)
 
 	mgr, _ := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             runtime.NewScheme(),
-		MetricsBindAddress: ":8080",
-		Port:               9443,
-		LeaderElection:     false,
-		LeaderElectionID:   pkg_common.DellCSIVolumegroup,
+		Scheme: runtime.NewScheme(),
+		Metrics: metricsserver.Options{
+			BindAddress: ":8080",
+		},
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Port: 9443,
+		}),
+		LeaderElection:   false,
+		LeaderElectionID: pkg_common.DellCSIVolumegroup,
 	})
 
-	expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(time.Second, 5*time.Minute)
+	// expRateLimiter := workqueue.NewItemExponentialFailureRateLimiter(time.Second, 5*time.Minute)
 
-	vgReconcile.SetupWithManager(mgr, expRateLimiter, 5)
+	vgReconcile.SetupWithManager(mgr, 5)
+	// vgReconcile.SetupWithManager(mgr, expRateLimiter, 5)
 
 	// invoke controller Reconcile to test. typically k8s would call this when resource is changed
 	res, err := vgReconcile.Reconcile(context.Background(), req)
