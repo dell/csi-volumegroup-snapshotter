@@ -17,4 +17,4 @@ push:
 	$(BUILDER) push "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
 
 download-csm-common:
-	curl -O -L https://raw.githubusercontent.com/dell/csm/base-image-improvements/config/csm-common.mk
+	curl -O -L https://raw.githubusercontent.com/dell/csm/main/config/csm-common.mk
