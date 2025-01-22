@@ -5,22 +5,16 @@ IMAGETAG="v$(MAJOR).$(MINOR).$(PATCH)$(RELNOTE)"
 endif
 
 
-docker:
-	@echo "Base Images is set to: $(BASEIMAGE)"
+docker: download-csm-common
+	$(eval include csm-common.mk)
+	@echo "Base Images is set to: $(CSM_BASEIMAGE)"
 	@echo "Using Golang Image $(DEFAULT_GOIMAGE)"
 	@echo "Building: $(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
-	$(BUILDER) build -t "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)" --target $(BUILDSTAGE) --build-arg BASEIMAGE=$(BASEIMAGE) --build-arg GOIMAGE=$(DEFAULT_GOIMAGE) .
+	$(BUILDER) build -t "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)" --target $(BUILDSTAGE) --build-arg BASEIMAGE=$(CSM_BASEIMAGE) --build-arg GOIMAGE=$(DEFAULT_GOIMAGE) .
 
-push:   
+push:
 	@echo "Pushing: $(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
 	$(BUILDER) push "$(REGISTRY)/$(IMAGENAME):$(IMAGETAG)"
 
-build-base-image: download-csm-common
-	$(eval include csm-common.mk)
-	@echo "Building base image from $(DEFAULT_BASEIMAGE) and loading dependencies..."
-	./scripts/build_ubi_micro.sh $(DEFAULT_BASEIMAGE)
-	@echo "Base image build: SUCCESS"
-	$(eval BASEIMAGE=localhost/vgs-ubimicro:latest)
-
 download-csm-common:
-	curl -O -L https://raw.githubusercontent.com/dell/csm/main/config/csm-common.mk
+	curl -O -L https://raw.githubusercontent.com/dell/csm/base-image-improvements/config/csm-common.mk
