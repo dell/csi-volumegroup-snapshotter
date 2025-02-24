@@ -14,7 +14,7 @@ You may obtain a copy of the License at
 
 ---
 
-#### Dell CSM Volume Group Snapshotter will be deprecated in CSM 1.14 (May 2025) and will no longer be supported.
+#### Dell CSM Volume Group Snapshotter is deprecated and will no longer be supported.
 
 ---
 
